@@ -51,7 +51,8 @@
             setReadOnlyProperty(self, 'dispose', dispose);
             setReadOnlyProperty(self, 'createChildContainer', createChildContainer);
             setReadOnlyProperty(self, 'setParentContainer', setParentContainer);
-            setReadOnlyProperty(self, 'Bootstrapper', Bootstrapper);
+            setReadOnlyProperty(self, 'bootstrap', bootstrap);
+            setReadOnlyProperty(self, 'Bootstrapper', bootstrap); // x-compatibility with hilary
             setReadOnlyProperty(self, 'context', context);
 
             if (config.name) {
@@ -385,12 +386,12 @@
                 }
             }
 
-            function Bootstrapper (bootstrapper, callback) {
+            function bootstrap (startup, callback) {
                 var tasks = [], done;
-                bootstrapper = bootstrapper || {};
+                startup = startup || {};
 
-                if (is.function(bootstrapper.onComposed)) {
-                    done = bootstrapper.onComposed;
+                if (is.function(startup.onComposed)) {
+                    done = startup.onComposed;
                 } else if (is.function(callback)) {
                     done = callback;
                 } else {
@@ -405,8 +406,8 @@
                     next(null, self);
                 });
 
-                if (is.function(bootstrapper.composeModules)) {
-                    tasks.push(bootstrapper.composeModules);
+                if (is.function(startup.composeModules)) {
+                    tasks.push(startup.composeModules);
                 }
 
                 async.waterfall(tasks, done);
