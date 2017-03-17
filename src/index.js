@@ -10,6 +10,12 @@ if (typeof module !== 'undefined' && module.exports) {
 
     module.exports = HilaryApi;
 } else if (typeof window !== 'undefined') {
+    if (!window.polyn) {
+        throw new Error('[HILARY] Hilary depends on polyn. Make sure it is included before loading Hilary (https://github.com/losandes/polyn)');
+    } else if (!window.__hilary) {
+        throw new Error('[HILARY] Hilary modules were loaded out of order');
+    }
+
     (function (polyn, __hilary, window) {
         'use strict';
 
