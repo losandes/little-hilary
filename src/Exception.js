@@ -2,12 +2,18 @@
     'use strict';
 
     register({
-        name: 'MyModule',
-        factory: MyModule
+        name: 'Exception',
+        factory: Exception
     });
 
-    function MyModule () {
-
+    function Exception (input) {
+        return {
+            isException: true,
+            type: input.type,
+            error: input.error,
+            messages: input.messages || [],
+            data: input.data
+        };
     }
 
 }(function (registration) {

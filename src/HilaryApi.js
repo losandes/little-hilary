@@ -22,7 +22,7 @@
         factory: HilaryApi
     });
 
-    function HilaryApi (async, is, id, Immutable, locale, Logger, Context, HilaryModule) {
+    function HilaryApi (async, is, id, Immutable, locale, Logger, Exception, Context, HilaryModule) {
         var Api,
             scopes = {};
 
@@ -45,15 +45,19 @@
 
             setReadOnlyProperty(self, '__isHilaryScope', true);
             setReadOnlyProperty(self, 'register', register);
-            setReadOnlyProperty(self, 'autoRegister', register); // x-compatibility with hilary
             setReadOnlyProperty(self, 'resolve', resolve);
             setReadOnlyProperty(self, 'exists', exists);
             setReadOnlyProperty(self, 'dispose', dispose);
             setReadOnlyProperty(self, 'createChildContainer', createChildContainer);
             setReadOnlyProperty(self, 'setParentContainer', setParentContainer);
             setReadOnlyProperty(self, 'bootstrap', bootstrap);
-            setReadOnlyProperty(self, 'Bootstrapper', bootstrap); // x-compatibility with hilary
             setReadOnlyProperty(self, 'context', context);
+
+            if (config.hilaryCompatible) {
+                // add hilaryjs compatible APIs
+                setReadOnlyProperty(self, 'autoRegister', register);
+                setReadOnlyProperty(self, 'Bootstrapper', bootstrap);
+            }
 
             if (config.name) {
                 scopes[config.name] = self;
@@ -519,16 +523,6 @@
           writable: false,
           value: value
         });
-    }
-
-    function Exception (input) {
-        return {
-            isException: true,
-            type: input.type,
-            error: input.error,
-            messages: input.messages || [],
-            data: input.data
-        };
     }
 
 }(function (registration) {
