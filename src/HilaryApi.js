@@ -35,8 +35,8 @@
         */
         Api = function (options) {
             var self = {},
-                config = new Config(options),
                 logger = new Logger(options),
+                config = new Config(options),
                 context,
                 onError,
                 errorHandler;
@@ -483,6 +483,28 @@
                 }
             }
 
+            function Config (options) {
+                var self = is.object(options) ? options : {};
+
+                if (is.string(options)) {
+                    self.scope = options;
+                } else if (!options || is.nullOrUndefined(options.scope)) {
+                    if (is.string(options.name)) {
+                        self.scope = options.name;
+                    } else {
+                        self.scope = id.createUid(8);
+                    }
+                }
+
+                if (options && is.function(options.onResolveUndefined)) {
+                    self.onResolveUndefined = options.onResolveUndefined;
+                } else {
+                    self.onResolveUndefined = logger.warn;
+                }
+
+                return self;
+            } // /Config
+
             // REGISTER Default Modules
             self.register({ name: ASYNC,        factory: async });
             self.register({ name: CONTEXT,      singleton: false, factory: function () { return context; } });
@@ -497,24 +519,8 @@
             return new Api(options);
         };
 
-        function Config (options) {
-            var self = is.object(options) ? options : {};
-
-            if (is.string(options)) {
-                self.name = options;
-            } else if (!options || is.nullOrUndefined(options.name)) {
-                self.name = id.createUid(8);
-            }
-
-            if (options && is.function(options.onResolveUndefined)) {
-                self.onResolveUndefined = options.onResolveUndefined;
-            } else {
-                self.onResolveUndefined = console.log;
-            }
-
-            return self;
-        }
-    }
+        return Api;
+    } // /Api
 
     function setReadOnlyProperty (obj, name, value) {
         Object.defineProperty(obj, name, {

@@ -8,8 +8,12 @@
 
     function Context(Immutable, Container) {
         var IContext = new Immutable({
+            __blueprintId: 'Hilary::Context',
             scope: 'string',
-            parent: 'string',
+            parent: {
+                type: 'string',
+                required: false
+            },
             container: 'object',
             singletonContainer: 'object'
         });

@@ -13,7 +13,7 @@ module.exports = function (grunt) {
                     //clearRequireCache: false // Optionally clear the require cache before running tests (defaults to false)
             },
             require: 'coverage/blanket',
-            src: ['./test/node/test.js']
+            src: ['./tests/node-bootstrapper.js']
         },
         coverage: {
             options: {
@@ -24,7 +24,7 @@ module.exports = function (grunt) {
                 // output (the quiet option does not suppress this)
                 captureFile: 'coverage.html'
             },
-            src: ['./test/node/test.js']
+            src: ['./tests/node-bootstrapper.js']
         }
     });
 };

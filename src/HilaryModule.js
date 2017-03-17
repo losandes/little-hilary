@@ -10,7 +10,13 @@
         var IModule = new Immutable({
             __blueprintId: 'Hilary::HilaryModule',
             name: 'string',
-            factory: 'function',
+            factory: {
+                validate: function (val, errors) {
+                    if (!val) {
+                        errors.push('This implementation does not satisfy blueprint, Hilary::HilaryModule. It should have the property, factory.');
+                    }
+                }
+            },
             isHilaryModule: 'boolean',
             singleton: {
                 type: 'boolean',

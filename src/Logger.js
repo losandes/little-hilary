@@ -49,7 +49,13 @@
 
         function Options (options) {
             var level;
-            options = options || {};
+
+            if (typeof options === 'string') {
+                options = {};
+            } else {
+                options = options || {};
+            }
+
             options.logging = options.logging || {};
 
             if (options.logging.level && is.string(options.logging.level)) {
