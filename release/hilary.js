@@ -19,7 +19,7 @@
                 MODULE_NOT_RESOLVABLE: "The module, {{module}}, cannot be resolved because of a dependency exception, causing a ripple effect for, {{startingModule}}",
                 MODULE_UNDEFINED: "The following module was resolved but returned undefined: ",
                 REGISTRATION_BLACK_LIST: "A module was registered with a reserved name: ",
-                PARENT_CONTAINER_ARG: "setParentContainer expects the name of the parent scope, or an instance of Hilary"
+                PARENT_CONTAINER_ARG: "setParentScope expects the name of the parent scope, or an instance of Hilary"
             }
         }
     });
@@ -191,13 +191,18 @@
             singletonContainer: "object"
         });
         return function(options) {
-            var context = new IContext({
+            var context;
+            options = options || {};
+            if (options.parent && typeof options.parent !== "string") {
+                options.parent = options.parent.name;
+            }
+            context = new IContext({
                 scope: options.scope,
                 parent: options.parent,
                 container: new Container(),
                 singletonContainer: new Container()
             });
-            context.setParentContainer = function(parent) {
+            context.setParentScope = function(parent) {
                 return IContext.merge({
                     parent: parent
                 });
@@ -416,7 +421,7 @@
         factory: HilaryApi
     });
     function HilaryApi(async, is, id, Immutable, locale, Logger, Exception, Context, HilaryModule) {
-        var Api, scopes = {};
+        var Api, scopes = {}, defaultScope;
         Api = function(options) {
             var self, logger = new Logger(options), config = new Config(options), context, onError, errorHandler;
             context = new Context(config);
@@ -425,9 +430,9 @@
                 resolve: resolve,
                 exists: exists,
                 dispose: dispose,
-                createChildContainer: createChildContainer,
-                setParentContainer: setParentContainer,
-                bootstrap: bootstrap
+                bootstrap: bootstrap,
+                scope: scope,
+                setParentScope: setParentScope
             };
             setReadOnlyProperty(self, "__isHilaryScope", true);
             setReadOnlyProperty(self, "context", context);
@@ -639,25 +644,33 @@
                     return context.container.dispose(moduleName) && context.singletonContainer.dispose(moduleName);
                 }, callback);
             }
-            function createChildContainer(childOptions, callback) {
+            function scope(name, options, callback) {
+                options = options || {};
+                options.parent = getScopeName(options.parent || self);
                 return optionalAsync(function() {
-                    childOptions = childOptions || {};
-                    childOptions.parentContainer = self;
-                    return new Api(childOptions);
-                }, callback);
+                    return Api.scope(name, options);
+                }, new Error(), callback);
             }
-            function setParentContainer(scope) {
-                if (is.string(scope)) {
-                    context = context.setParentContainer(scope);
-                    return context;
-                } else if (scope.__isHilaryScope) {
-                    context = context.setParentContainer(scope.context.scope);
-                    return context;
-                } else {
+            function setParentScope(scope) {
+                var name = getScopeName(scope);
+                if (!name) {
                     return new Exception({
                         type: locale.errorTypes.INVALID_ARG,
                         error: new Error(locale.api.PARENT_CONTAINER_ARG)
                     });
+                }
+                context = context.setParentScope(name);
+                return context;
+            }
+            function getScopeName(scope) {
+                if (!scope) {
+                    return null;
+                } else if (is.string(scope)) {
+                    return scope;
+                } else if (scope.__isHilaryScope) {
+                    return scope.context.scope;
+                } else {
+                    return null;
                 }
             }
             function bootstrap(startup, callback) {
@@ -755,37 +768,45 @@
                 }
                 return self;
             }
-            context.singletonContainer.register({
-                name: ASYNC,
-                factory: async
-            });
-            context.singletonContainer.register({
-                name: CONTEXT,
-                singleton: false,
-                factory: function() {
-                    return context;
-                }
-            });
-            context.singletonContainer.register({
-                name: IMMUTABLE,
-                factory: Immutable
-            });
-            context.singletonContainer.register({
-                name: IS,
-                factory: is
-            });
-            context.singletonContainer.register({
-                name: PARENT,
-                factory: function() {
-                    return context.parent;
-                }
-            });
             return self;
         };
-        Api.scope = function(options) {
-            return new Api(options);
+        Api.scope = function(name, options) {
+            if (scopes[name]) {
+                return scopes[name];
+            } else {
+                options = options || {};
+                options.name = name;
+                scopes[name] = new Api(options);
+                return scopes[name];
+            }
         };
-        return Api;
+        defaultScope = Api.scope("default");
+        defaultScope.context.singletonContainer.register({
+            name: ASYNC,
+            factory: async
+        });
+        defaultScope.context.singletonContainer.register({
+            name: CONTEXT,
+            singleton: false,
+            factory: function() {
+                return defaultScope.context;
+            }
+        });
+        defaultScope.context.singletonContainer.register({
+            name: IMMUTABLE,
+            factory: Immutable
+        });
+        defaultScope.context.singletonContainer.register({
+            name: IS,
+            factory: is
+        });
+        defaultScope.context.singletonContainer.register({
+            name: PARENT,
+            factory: function() {
+                return defaultScope.context.parent;
+            }
+        });
+        return defaultScope;
     }
     function setReadOnlyProperty(obj, name, value) {
         Object.defineProperty(obj, name, {

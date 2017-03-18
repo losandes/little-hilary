@@ -19,14 +19,21 @@
         });
 
         return function (options) {
-            var context = new IContext({
+            var context;
+            options = options || {};
+
+            if (options.parent && typeof options.parent !== 'string') {
+                options.parent = options.parent.name;
+            }
+
+            context = new IContext({
                 scope: options.scope,
                 parent: options.parent,
                 container: new Container(),
                 singletonContainer: new Container()
             });
 
-            context.setParentContainer = function (parent) {
+            context.setParentScope = function (parent) {
                 return IContext.merge({ parent: parent });
             };
 

@@ -24,7 +24,8 @@
 
     function HilaryApi (async, is, id, Immutable, locale, Logger, Exception, Context, HilaryModule) {
         var Api,
-            scopes = {};
+            scopes = {},
+            defaultScope;
 
         /*
         // The Hilary constructor
@@ -48,9 +49,9 @@
                 resolve: resolve,
                 exists: exists,
                 dispose: dispose,
-                createChildContainer: createChildContainer,
-                setParentContainer: setParentContainer,
-                bootstrap: bootstrap
+                bootstrap: bootstrap,
+                scope: scope,
+                setParentScope: setParentScope
             };
 
 
@@ -352,18 +353,19 @@
             }
 
             /*
-            // exposes the constructor for hilary so you can create child contexts
+            // exposes the constructor for hilary so you can create
+            // new scopes, and child scopes
             // @param options.name (string): a named scope
             //
             // @returns new Hilary scope with parent set to this (the current Hilary scope)
             */
-            function createChildContainer (childOptions, callback) {
-                return optionalAsync(function () {
-                    childOptions = childOptions || {};
-                    childOptions.parentContainer = self;
+            function scope (name, options, callback) {
+                options = options || {};
+                options.parent = getScopeName(options.parent || self);
 
-                    return new Api(childOptions);
-                }, callback);
+                return optionalAsync(function () {
+                    return Api.scope(name, options);
+                }, new Error(), callback);
             }
 
             /*
@@ -373,18 +375,29 @@
             //
             // @returns new Hilary scope with parent set to this (the current Hilary scope)
             */
-            function setParentContainer (scope) {
-                if (is.string(scope)) {
-                    context = context.setParentContainer(scope);
-                    return context;
-                } else if (scope.__isHilaryScope) {
-                    context = context.setParentContainer(scope.context.scope);
-                    return context;
-                } else {
+            function setParentScope (scope) {
+                var name = getScopeName(scope);
+
+                if (!name) {
                     return new Exception({
                         type: locale.errorTypes.INVALID_ARG,
                         error: new Error(locale.api.PARENT_CONTAINER_ARG)
                     });
+                }
+
+                context = context.setParentScope(name);
+                return context;
+            }
+
+            function getScopeName (scope) {
+                if (!scope) {
+                    return null;
+                } else if (is.string(scope)) {
+                    return scope;
+                } else if (scope.__isHilaryScope) {
+                    return scope.context.scope;
+                } else {
+                    return null;
                 }
             }
 
@@ -503,21 +516,31 @@
                 return self;
             } // /Config
 
-            // REGISTER Default Modules
-            context.singletonContainer.register({ name: ASYNC,        factory: async });
-            context.singletonContainer.register({ name: CONTEXT,      singleton: false, factory: function () { return context; } });
-            context.singletonContainer.register({ name: IMMUTABLE,    factory: Immutable });
-            context.singletonContainer.register({ name: IS,           factory: is });
-            context.singletonContainer.register({ name: PARENT,       factory: function () { return context.parent; } });
-
             return self;
         }; // /Api
 
-        Api.scope = function (options) {
-            return new Api(options);
+        Api.scope = function (name, options) {
+            if (scopes[name]) {
+                return scopes[name];
+            } else {
+                options = options || {};
+                options.name = name;
+                scopes[name] = new Api(options);
+                return scopes[name];
+            }
         };
 
-        return Api;
+        defaultScope = Api.scope('default');
+
+        // REGISTER Default Modules
+// TODO: should these be on the container, as well, since that is normal behavior?
+        defaultScope.context.singletonContainer.register({ name: ASYNC,        factory: async });
+        defaultScope.context.singletonContainer.register({ name: CONTEXT,      singleton: false, factory: function () { return defaultScope.context; } });
+        defaultScope.context.singletonContainer.register({ name: IMMUTABLE,    factory: Immutable });
+        defaultScope.context.singletonContainer.register({ name: IS,           factory: is });
+        defaultScope.context.singletonContainer.register({ name: PARENT,       factory: function () { return defaultScope.context.parent; } });
+
+        return defaultScope;
     } // /Api
 
     function setReadOnlyProperty (obj, name, value) {

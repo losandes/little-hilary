@@ -19,7 +19,7 @@
                 MODULE_NOT_RESOLVABLE: 'The module, {{module}}, cannot be resolved because of a dependency exception, causing a ripple effect for, {{startingModule}}',
                 MODULE_UNDEFINED: 'The following module was resolved but returned undefined: ',
                 REGISTRATION_BLACK_LIST: 'A module was registered with a reserved name: ',
-                PARENT_CONTAINER_ARG: 'setParentContainer expects the name of the parent scope, or an instance of Hilary'
+                PARENT_CONTAINER_ARG: 'setParentScope expects the name of the parent scope, or an instance of Hilary'
             }
         }
     });
