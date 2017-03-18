@@ -6,9 +6,9 @@ if (typeof module !== 'undefined' && module.exports) {
         Context = require('./Context')(polyn.Immutable, Container),
         HilaryModule = require('./HilaryModule')(polyn.is, polyn.Immutable, polyn.objectHelper),
         Logger = require('./Logger')(polyn.is),
-        HilaryApi = require('./HilaryApi')(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
+        hilary = require('./HilaryApi')(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
 
-    module.exports = HilaryApi;
+    module.exports = hilary;
 } else if (typeof window !== 'undefined') {
     if (!window.polyn) {
         throw new Error('[HILARY] Hilary depends on polyn. Make sure it is included before loading Hilary (https://github.com/losandes/polyn)');
@@ -24,10 +24,9 @@ if (typeof module !== 'undefined' && module.exports) {
             Container = __hilary.Container(locale, polyn.is, polyn.Immutable, Exception),
             Context = __hilary.Context(polyn.Immutable, Container),
             HilaryModule = __hilary.HilaryModule(polyn.is, polyn.Immutable, polyn.objectHelper),
-            Logger = __hilary.Logger(polyn.is),
-            HilaryApi = __hilary.HilaryApi(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
+            Logger = __hilary.Logger(polyn.is);
 
-        window.Hilary = HilaryApi;
+        window.hilary = __hilary.HilaryApi(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
 
     }(window.polyn, window.__hilary, window));
 } else {

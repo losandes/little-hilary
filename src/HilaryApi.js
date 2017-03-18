@@ -2,20 +2,11 @@
     'use strict';
 
     var ASYNC = 'polyn::async',
-        BOOTSTRAPPER = 'hilary::bootstrapper',
         CONTEXT = 'hilary::context',
         ERROR_HANDLER = 'hilary::error-handler',
         IMMUTABLE = 'polyn::Immutable',
         IS = 'polyn::is',
-        PARENT = 'hilary::parent',
-        REGISTRATION_BLACK_LIST = {};
-
-    REGISTRATION_BLACK_LIST[ASYNC] = true;
-    REGISTRATION_BLACK_LIST[BOOTSTRAPPER] = true;
-    REGISTRATION_BLACK_LIST[CONTEXT] = true;
-    REGISTRATION_BLACK_LIST[IMMUTABLE] = true;
-    REGISTRATION_BLACK_LIST[IS] = true;
-    REGISTRATION_BLACK_LIST[PARENT] = true;
+        PARENT = 'hilary::parent';
 
     register({
         name: 'HilaryApi',
@@ -54,19 +45,19 @@
                 setParentScope: setParentScope
             };
 
-
             setReadOnlyProperty(self, '__isHilaryScope', true);
             setReadOnlyProperty(self, 'context', context);
 
-            if (config.hilaryCompatible) {
-                // add hilaryjs compatible APIs
-                self.autoRegister = register;
-                self.Bootstrapper = bootstrap;
-            }
+            scopes[config.scope] = self;
 
-            if (config.name) {
-                scopes[config.name] = self;
-            }
+            // TODO: this is probably better done with a wrapper
+            // if (config.hilaryCompatible) {
+            //     // add hilaryjs compatible APIs
+            //     self.autoRegister = register;
+            //     self.Bootstrapper = bootstrap;
+            // }
+
+
 
             /*
             // register a module by name, an array of modules
@@ -78,10 +69,10 @@
                 var err = new Error(locale.api.REGISTER_ERR);
 
                 if (is.object(moduleOrArray)) {
-                    // this is a single module
+                    logger.trace('[TRACE] registering a single module:', moduleOrArray);
                     return registerOne(moduleOrArray, err, callback);
                 } else if (is.array(moduleOrArray)) {
-                    // this is an array of modules
+                    logger.trace('[TRACE] registering an array of modules:', moduleOrArray);
                     return optionalAsync(function () {
                         moduleOrArray.forEach(registerOne);
                         return self;
@@ -93,6 +84,7 @@
                         data: moduleOrArray
                     });
 
+                    logger.trace('[TRACE] registration failed:', exc);
                     onError(exc);
                     return exc;
                 }
@@ -111,29 +103,21 @@
                     var hilaryModule = new HilaryModule(input);
 
                     if (hilaryModule.isException) {
+                        logger.trace('[TRACE] Invalid registration model:', hilaryModule);
                         next(new Exception({
                             type: locale.errorTypes.INVALID_ARG,
                             error: new Error(hilaryModule.error.message),
                             messages: hilaryModule.messages
                         }));
                     } else {
+                        logger.trace('[TRACE] Successfully bound to HilaryModule:', hilaryModule.name);
                         next(null, hilaryModule);
                     }
                 });
 
-                tasks.push(function validate (hilaryModule, next) {
-                    if (REGISTRATION_BLACK_LIST[hilaryModule.name]) {
-                        return next(new Exception({
-                            type: locale.errorTypes.INVALID_ARG,
-                            error: new Error(locale.api.REGISTRATION_BLACK_LIST + hilaryModule.name)
-                        }));
-                    }
-
-                    next(null, hilaryModule);
-                });
-
                 tasks.push(function optionallyResetErrorHandler (hilaryModule, next) {
                     if (hilaryModule.name === ERROR_HANDLER) {
+                        logger.trace('[TRACE] Error handler reset');
                         errorHandler = null;
                     }
 
@@ -142,26 +126,34 @@
 
                 tasks.push(function addToContainer (hilaryModule, next) {
                     context.container.register(hilaryModule);
+                    logger.trace('[TRACE] Module registered on container', hilaryModule.name);
                     next(null, hilaryModule);
                 });
 
                 if (is.function(callback)) {
-                    async.waterfall(tasks, function (err, results) {
+                    return async.waterfall(tasks, function (err, hilaryModule) {
                         if (err) {
+                            logger.trace('[TRACE] Registration failed:', input, err);
                             onError(err);
+                            return callback(err);
                         }
 
-                        callback(err, results);
+                        logger.trace('[TRACE] Registration success:', hilaryModule.name);
+                        callback(err, hilaryModule);
                     });
                 } else {
                     var output;
 
-                    async.waterfall(tasks, { blocking: true }, function (err, result) {
+                    async.waterfall(tasks, { blocking: true }, function (err, hilaryModule) {
                         if (err) {
+                            logger.trace('[TRACE] Registration failed:', input, err);
                             onError(err);
+                            output = err;
+                            return;
                         }
 
-                        output = err || result;
+                        logger.trace('[TRACE] Registration success:', hilaryModule.name);
+                        output = hilaryModule;
                     });
 
                     return output;
@@ -174,6 +166,7 @@
             // @returns the module that is being resolved
             */
             function resolve (moduleName, callback) {
+                logger.trace('[TRACE] resolving:', moduleName);
                 return resolveOne(moduleName, moduleName, callback);
             }
 
@@ -192,8 +185,10 @@
 
                 tasks.push(function validateModuleName (ctx, next) {
                     if (is.string(ctx.name)) {
+                        logger.trace('[TRACE] module name is valid:', ctx.name);
                         next(null, ctx);
                     } else {
+                        logger.trace('[TRACE] module name is INVALID:', ctx.name);
                         next(new Exception({
                             type: locale.errorTypes.INVALID_ARG,
                             error: new Error(locale.api.RESOLVE_ARG + JSON.stringify(ctx.name))
@@ -203,14 +198,17 @@
 
                 tasks.push(function findModule (ctx, next) {
                     if (ctx.context.singletonContainer.exists(ctx.name)) {
+                        logger.trace('[TRACE] found singleton for:', ctx.name);
                         ctx.resolved = context.singletonContainer.resolve(ctx.name);
                         ctx.isResolved = true;
                         ctx.registerSingleton = false;
                         next(null, ctx);
                     } else if (context.container.exists(ctx.name)) {
+                        logger.trace('[TRACE] found factory for:', ctx.name);
                         ctx.theModule = context.container.resolve(ctx.name);
                         next(null, ctx);
                     } else {
+                        logger.trace('[TRACE] module not found:', ctx.name);
                         next(new Exception({
                             type: locale.errorTypes.MODULE_NOT_FOUND,
                             error: new Error(locale.api.RESOLVE_ARG),
@@ -223,13 +221,15 @@
                 });
 
                 tasks.push(function resolveDependencies (ctx, next) {
-                    var tasks;
+                    var subTasks;
+                    logger.trace('[TRACE] resolving dependencies for:', ctx.name);
 
                     if (ctx.isResolved) {
                         // this was a singleton that has been resolved before
                         return next(null, ctx);
                     } else if (is.array(ctx.theModule.dependencies) && ctx.theModule.dependencies.length > 0) {
-                        tasks = ctx.theModule.dependencies.map(function (item) {
+                        logger.trace('[TRACE] resolving with dependencies array:', ctx.theModule.dependencies);
+                        subTasks = ctx.theModule.dependencies.map(function (item) {
                             return function (dependencies, relyingModuleName, cb) {
                                 var dependency = resolveOne(item, relyingModuleName);
 
@@ -243,12 +243,13 @@
                             };
                         });
 
-                        tasks.unshift(function (cb) {
+                        subTasks.unshift(function (cb) {
                             cb(null, [], ctx.relyingName);
                         });
 
-                        return async.waterfall(tasks, function (err, dependencies) {
+                        return async.waterfall(subTasks, function (err, dependencies) {
                             if (err) {
+                                logger.trace('[TRACE] at least one dependency was not found for:', ctx.name, err);
                                 return next(err);
                             }
 
@@ -256,13 +257,15 @@
                             ctx.registerSingleton = ctx.theModule.singleton;
                             ctx.isResolved = true;
 
+                            logger.trace('[TRACE] dependencies resolved for:', ctx.name);
                             next(null, ctx);
                         });
                     } else if (is.function(ctx.theModule.factory) && ctx.theModule.factory.length === 0) {
-                        // the module is a function and takes no arguments, return the result of executing it
+                        logger.trace('[TRACE] the factory is a function and takes no arguments, returning the result of executing it:', ctx.name);
                         ctx.resolved = ctx.theModule.factory.call();
                     } else {
                         // the module takes arguments and has no dependencies, this must be a factory
+                        logger.trace('[TRACE] the factory takes arguments and has no dependencies, returning the function as-is:', ctx.name);
                         ctx.resolved = ctx.theModule.factory;
                     }
 
@@ -273,6 +276,7 @@
 
                 tasks.push(function optionallyRegisterSingleton (ctx, next) {
                     if (ctx.registerSingleton) {
+                        logger.trace('[TRACE] registering the resolved module as a singleton: ', ctx.name);
                         context.singletonContainer.register({
                             name: ctx.name,
                             factory: ctx.resolved
@@ -284,13 +288,22 @@
 
                 tasks.push(function warnOnUndefined (ctx, next) {
                     if (typeof ctx.resolved === 'undefined') {
-                        ctx.config.onResolveUndefined(locale.api.MODULE_UNDEFINED + ctx.name);
+                        logger.trace('[TRACE] the module was found, but the factory returned undefined:', ctx.name);
+                        try {
+                            ctx.config.onResolveUndefined(new Exception({
+                                type: locale.errorTypes.MODULE_NOT_DEFINED,
+                                error: new Error(locale.api.MODULE_UNDEFINED + ctx.name)
+                            }));
+                        } catch (e) {
+                            logger.error(e);
+                        }
                     }
 
                     next(null, ctx);
                 });
 
                 tasks.push(function bindToOutput (ctx, next) {
+                    logger.trace('[TRACE] binding the module to the output:', ctx.name);
                     next(null, ctx.resolved);
                 });
 
@@ -302,28 +315,37 @@
                             err.type === locale.errorTypes.MODULE_NOT_FOUND &&
                             context.parent
                         ) {
+                            logger.trace('[TRACE] attempting to resolve the module, ' + ctx.name + ', on the parent scope:', ctx.parent);
                             return scopes[context.parent].resolveOne(moduleName, relyingModuleName, callback);
                         } else if (err) {
+                            logger.trace('[TRACE] resolve failed for:', ctx.name, err);
                             onError(err);
+                            return callback(err);
                         }
 
-                        callback(err, results);
+                        logger.trace('[TRACE] module resolved:', ctx.name);
+                        callback(null, results);
                     });
                 } else {
                     var output;
 
-                    async.waterfall(tasks, { blocking: true }, function (err, result) {
+                    async.waterfall(tasks, { blocking: true }, function (err, results) {
                         if (
                             err &&
                             err.type === locale.errorTypes.MODULE_NOT_FOUND &&
                             context.parent
                         ) {
+                            logger.trace('[TRACE] attempting to resolve the module, ' + ctx.name + ', on the parent scope:', ctx.parent);
                             return scopes[context.parent].resolveOne(moduleName, relyingModuleName);
                         } else if (err) {
+                            logger.trace('[TRACE] resolve failed for:', ctx.name, err);
                             onError(err);
+                            output = err;
+                            return;
                         }
 
-                        output = err || result;
+                        logger.trace('[TRACE] module resolved:', ctx.name);
+                        output = results;
                     });
 
                     return output;
@@ -336,6 +358,7 @@
             // @returns true if the module exists, otherwise false
             */
             function exists (moduleName) {
+                logger.trace('[TRACE] checking if module exists:', moduleName);
                 return context.container.exists(moduleName);
             }
 
@@ -346,6 +369,7 @@
             // @returns boolean: true if the object(s) were disposed, otherwise false
             */
             function dispose (moduleName, callback) {
+                logger.trace('[TRACE] disposing module(s):', moduleName);
                 return optionalAsync(function () {
                     return context.container.dispose(moduleName) &&
                         context.singletonContainer.dispose(moduleName);
@@ -363,6 +387,12 @@
                 options = options || {};
                 options.parent = getScopeName(options.parent || self);
 
+                if (scopes[name]) {
+                    logger.trace('[TRACE] returning existing scope:', name);
+                } else {
+                    logger.trace('[TRACE] creating new scope:', name, options);
+                }
+
                 return optionalAsync(function () {
                     return Api.scope(name, options);
                 }, new Error(), callback);
@@ -379,12 +409,14 @@
                 var name = getScopeName(scope);
 
                 if (!name) {
+                    logger.trace('[TRACE] unable to set the parent scope of, ' + self.context.scope + ', to:', name);
                     return new Exception({
                         type: locale.errorTypes.INVALID_ARG,
                         error: new Error(locale.api.PARENT_CONTAINER_ARG)
                     });
                 }
 
+                logger.trace('[TRACE] setting the parent scope of, ' + self.context.scope + ', to:', name);
                 context = context.setParentScope(name);
                 return context;
             }
@@ -406,10 +438,13 @@
                 startup = startup || {};
 
                 if (is.function(startup.onComposed)) {
+                    logger.trace('[TRACE] using onComposed as the callback for the bootstrapper (ignores the callback argument) for:', self.context.scope);
                     done = startup.onComposed;
                 } else if (is.function(callback)) {
+                    logger.trace('[TRACE] using the callback argument for the bootstrapper for:', self.context.scope);
                     done = callback;
                 } else {
+                    logger.trace('[TRACE] a callback was not defined for the bootstrapper for:', self.context.scope);
                     done = function (err) {
                         if (err) {
                             logger.fatal(err);
@@ -422,6 +457,7 @@
                 });
 
                 if (is.function(startup.composeModules)) {
+                    logger.trace('[TRACE] composing modules for:', self.context.scope);
                     tasks.push(startup.composeModules);
                 }
 
@@ -439,8 +475,10 @@
                     tempHandler = self.resolve(ERROR_HANDLER);
 
                     if (tempHandler && is.function(tempHandler.throw)) {
+                        logger.trace('[TRACE] using custom error handler for:', self.context.scope);
                         errorHandler = tempHandler;
                     } else {
+                        logger.trace('[TRACE] using default error handler for:', self.context.scope);
                         errorHandler = {
                             throw: function (exception) {
                                 logger.error(exception);
@@ -473,33 +511,40 @@
             function optionalAsync(func, err, callback) {
                 if (is.function(callback)) {
                     async.runAsync(function () {
-                        try {
-                            callback(null, func());
-                        } catch (e) {
-                            err.message += '(' + e.message + ')';
-                            err.cause = e;
-                            onError(err);
+                        var result = tryWith(func, err);
+
+                        if (result.isException) {
                             callback(err);
+                        } else {
+                            callback(null, result);
                         }
                     });
                 } else {
-                    try {
-                        return func();
-                    } catch (e) {
-                        err.message += '(' + e.message + ')';
-                        err.cause = e;
-                        onError(err);
-                        callback(err);
-                    }
+                    return tryWith(func, err);
+                }
+            }
+
+            function tryWith(func, err) {
+                try {
+                    return func();
+                } catch (e) {
+                    err.message += '(' + e.message + ')';
+                    err.cause = e;
+                    onError(err);
+                    return {
+                        err: err,
+                        isException: true
+                    };
                 }
             }
 
             function Config (options) {
-                var self = is.object(options) ? options : {};
+                var self = {};
+                options = options || {};
 
                 if (is.string(options)) {
                     self.scope = options;
-                } else if (!options || is.nullOrUndefined(options.scope)) {
+                } else if (is.nullOrUndefined(options.scope)) {
                     if (is.string(options.name)) {
                         self.scope = options.name;
                     } else {
@@ -507,11 +552,13 @@
                     }
                 }
 
-                if (options && is.function(options.onResolveUndefined)) {
+                if (is.function(options.onResolveUndefined)) {
                     self.onResolveUndefined = options.onResolveUndefined;
                 } else {
                     self.onResolveUndefined = logger.warn;
                 }
+
+                self.logging = options.logging || { level: 30 };
 
                 return self;
             } // /Config

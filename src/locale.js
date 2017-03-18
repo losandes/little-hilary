@@ -6,7 +6,8 @@
         factory: {
             errorTypes: {
                 INVALID_ARG: 'InvalidArgument',
-                MODULE_NOT_FOUND: 'ModuleNotFound'
+                MODULE_NOT_FOUND: 'ModuleNotFound',
+                MODULE_NOT_DEFINED: 'ModuleNotDefined'
             },
             container: {
                 CONSUMER_REQUIRED: 'A consumer function is required to `enumerate` over a container'
