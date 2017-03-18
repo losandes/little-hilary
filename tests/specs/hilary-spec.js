@@ -15,6 +15,15 @@
                     expect(typeof scope.register).to.equal('function');
                     expect(typeof scope.resolve).to.equal('function');
                 });
+
+                it('should return register and resolve modules', function () {
+                    var scope = Hilary.scope('myScope');
+                    var registration = scope.register({ name: 'test', factory: { foo: 'bar' } });
+                    expect(registration.isException).to.equal(undefined);
+                    var actual = scope.resolve('test');
+                    expect(actual.foo).to.equal('bar');
+
+                });
             });
         });
     } // /Spec

@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/losandes/little-hilary",
   "dependencies": {
-    "polyn": "^1.*"
+    "polyn": "^1.9.*"
   },
   "devDependencies": {
     "chai": "^3.5.0",

@@ -8,18 +8,20 @@
 
     function Container (locale, is, Immutable, Exception) {
         return function (options) {
-            var container = {}, self = {};
+            var container = {}, self;
             options = options || {};
 
-            setReadOnlyProperty(self, 'get', get);
-            setReadOnlyProperty(self, 'register', register);
-            setReadOnlyProperty(self, 'resolve', options.makeResolveHandler ?
-                /*@Override*/ options.makeResolveHandler(resolve) :
-                resolve);
-            setReadOnlyProperty(self, 'exists', exists);
-            setReadOnlyProperty(self, 'enumerate', enumerate);
-            setReadOnlyProperty(self, 'dispose', dispose);
-            setReadOnlyProperty(self, 'disposeOne', disposeOne);
+            self = {
+                get: get,
+                register: register,
+                resolve: options.makeResolveHandler ?
+                    /*@Override*/ options.makeResolveHandler(resolve) :
+                    resolve,
+                exists: exists,
+                enumerate: enumerate,
+                dispose: dispose,
+                disposeOne: disposeOne
+            };
 
             /*
             // provides direct access to the underlying container object
@@ -110,15 +112,6 @@
 
             return self;
         };
-    }
-
-    function setReadOnlyProperty (obj, name, value) {
-        Object.defineProperty(obj, name, {
-          enumerable: false,
-          configurable: false,
-          writable: false,
-          value: value
-        });
     }
 
 }(function (registration) {

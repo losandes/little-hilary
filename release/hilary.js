@@ -1,4 +1,4 @@
-/*! little-hilary 2017-03-17 */
+/*! little-hilary 2017-03-18 */
 (function(register) {
     "use strict";
     register({
@@ -84,15 +84,17 @@
     });
     function Container(locale, is, Immutable, Exception) {
         return function(options) {
-            var container = {}, self = {};
+            var container = {}, self;
             options = options || {};
-            setReadOnlyProperty(self, "get", get);
-            setReadOnlyProperty(self, "register", register);
-            setReadOnlyProperty(self, "resolve", options.makeResolveHandler ? options.makeResolveHandler(resolve) : resolve);
-            setReadOnlyProperty(self, "exists", exists);
-            setReadOnlyProperty(self, "enumerate", enumerate);
-            setReadOnlyProperty(self, "dispose", dispose);
-            setReadOnlyProperty(self, "disposeOne", disposeOne);
+            self = {
+                get: get,
+                register: register,
+                resolve: options.makeResolveHandler ? options.makeResolveHandler(resolve) : resolve,
+                exists: exists,
+                enumerate: enumerate,
+                dispose: dispose,
+                disposeOne: disposeOne
+            };
             function get() {
                 return container;
             }
@@ -151,14 +153,6 @@
             }
             return self;
         };
-    }
-    function setReadOnlyProperty(obj, name, value) {
-        Object.defineProperty(obj, name, {
-            enumerable: false,
-            configurable: false,
-            writable: false,
-            value: value
-        });
     }
 })(function(registration) {
     "use strict";
@@ -424,20 +418,22 @@
     function HilaryApi(async, is, id, Immutable, locale, Logger, Exception, Context, HilaryModule) {
         var Api, scopes = {};
         Api = function(options) {
-            var self = {}, logger = new Logger(options), config = new Config(options), context, onError, errorHandler;
+            var self, logger = new Logger(options), config = new Config(options), context, onError, errorHandler;
             context = new Context(config);
+            self = {
+                register: register,
+                resolve: resolve,
+                exists: exists,
+                dispose: dispose,
+                createChildContainer: createChildContainer,
+                setParentContainer: setParentContainer,
+                bootstrap: bootstrap
+            };
             setReadOnlyProperty(self, "__isHilaryScope", true);
-            setReadOnlyProperty(self, "register", register);
-            setReadOnlyProperty(self, "resolve", resolve);
-            setReadOnlyProperty(self, "exists", exists);
-            setReadOnlyProperty(self, "dispose", dispose);
-            setReadOnlyProperty(self, "createChildContainer", createChildContainer);
-            setReadOnlyProperty(self, "setParentContainer", setParentContainer);
-            setReadOnlyProperty(self, "bootstrap", bootstrap);
             setReadOnlyProperty(self, "context", context);
             if (config.hilaryCompatible) {
-                setReadOnlyProperty(self, "autoRegister", register);
-                setReadOnlyProperty(self, "Bootstrapper", bootstrap);
+                self.autoRegister = register;
+                self.Bootstrapper = bootstrap;
             }
             if (config.name) {
                 scopes[config.name] = self;
@@ -477,24 +473,21 @@
                 });
                 tasks.push(function validate(hilaryModule, next) {
                     if (REGISTRATION_BLACK_LIST[hilaryModule.name]) {
-                        next(new Exception({
+                        return next(new Exception({
                             type: locale.errorTypes.INVALID_ARG,
                             error: new Error(locale.api.REGISTRATION_BLACK_LIST + hilaryModule.name)
                         }));
                     }
-                    next(hilaryModule);
+                    next(null, hilaryModule);
                 });
                 tasks.push(function optionallyResetErrorHandler(hilaryModule, next) {
                     if (hilaryModule.name === ERROR_HANDLER) {
                         errorHandler = null;
                     }
-                    next(hilaryModule);
+                    next(null, hilaryModule);
                 });
                 tasks.push(function addToContainer(hilaryModule, next) {
                     context.container.register(hilaryModule);
-                    if (hilaryModule.singleton) {
-                        context.singletonContainer.register(hilaryModule);
-                    }
                     next(null, hilaryModule);
                 });
                 if (is.function(callback)) {
@@ -762,26 +755,26 @@
                 }
                 return self;
             }
-            self.register({
+            context.singletonContainer.register({
                 name: ASYNC,
                 factory: async
             });
-            self.register({
+            context.singletonContainer.register({
                 name: CONTEXT,
                 singleton: false,
                 factory: function() {
                     return context;
                 }
             });
-            self.register({
+            context.singletonContainer.register({
                 name: IMMUTABLE,
                 factory: Immutable
             });
-            self.register({
+            context.singletonContainer.register({
                 name: IS,
                 factory: is
             });
-            self.register({
+            context.singletonContainer.register({
                 name: PARENT,
                 factory: function() {
                     return context.parent;
@@ -798,8 +791,12 @@
         Object.defineProperty(obj, name, {
             enumerable: false,
             configurable: false,
-            writable: false,
-            value: value
+            get: function() {
+                return value;
+            },
+            set: function() {
+                console.log(name + " is read only");
+            }
         });
     }
 })(function(registration) {
