@@ -199,7 +199,9 @@
                 tasks.push(function findModule (ctx, next) {
                     if (ctx.context.singletonContainer.exists(ctx.name)) {
                         logger.trace('[TRACE] found singleton for:', ctx.name);
-                        ctx.resolved = context.singletonContainer.resolve(ctx.name);
+                        ctx.resolved = context.singletonContainer
+                            .resolve(ctx.name)
+                            .factory;
                         ctx.isResolved = true;
                         ctx.registerSingleton = false;
                         next(null, ctx);
@@ -228,16 +230,22 @@
                         // this was a singleton that has been resolved before
                         return next(null, ctx);
                     } else if (is.array(ctx.theModule.dependencies) && ctx.theModule.dependencies.length > 0) {
-                        logger.trace('[TRACE] resolving with dependencies array:', ctx.theModule.dependencies);
+                        logger.trace('[TRACE] resolving with dependencies array:', ctx.theModule.dependencies.join(', '));
                         subTasks = ctx.theModule.dependencies.map(function (item) {
                             return function (dependencies, relyingModuleName, cb) {
-                                var dependency = resolveOne(item, relyingModuleName);
+                                var dependency = resolve(item, relyingModuleName);
 
-                                if (dependency.isException) {
+                                if (!dependency) {
                                     // short circuit
+                                    logger.warn('[TRACE] the following dependency was not resolved:', item);
+                                    return cb(null, dependencies, relyingModuleName);
+                                } else  if (dependency.isException) {
+                                    // short circuit
+                                    logger.trace('[TRACE] the following dependency returned an exception:', item);
                                     return cb(dependency);
                                 }
 
+                                logger.trace('[TRACE] the following dependency was resolved:', item);
                                 dependencies.push(dependency);
                                 cb(null, dependencies, relyingModuleName);
                             };
@@ -247,7 +255,7 @@
                             cb(null, [], ctx.relyingName);
                         });
 
-                        return async.waterfall(subTasks, function (err, dependencies) {
+                        return async.waterfall(subTasks, { blocking: true }, function (err, dependencies) {
                             if (err) {
                                 logger.trace('[TRACE] at least one dependency was not found for:', ctx.name, err);
                                 return next(err);
