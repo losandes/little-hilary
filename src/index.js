@@ -8,6 +8,10 @@ if (typeof module !== 'undefined' && module.exports) {
         Logger = require('./Logger')(polyn.is),
         hilary = require('./HilaryApi')(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
 
+        polyn.Blueprint.configure({
+            compatibility: '2017-03-20'
+        });
+        
     module.exports = hilary;
 } else if (typeof window !== 'undefined') {
     if (!window.polyn) {
@@ -25,6 +29,10 @@ if (typeof module !== 'undefined' && module.exports) {
             Context = __hilary.Context(polyn.Immutable, Container),
             HilaryModule = __hilary.HilaryModule(polyn.is, polyn.Blueprint, polyn.objectHelper, locale, Exception),
             Logger = __hilary.Logger(polyn.is);
+
+            polyn.Blueprint.configure({
+                compatibility: '2017-03-20'
+            });
 
         window.hilary = __hilary.HilaryApi(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
 
