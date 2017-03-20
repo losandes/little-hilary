@@ -96,6 +96,42 @@
                     expect(registration4.isException).to.equal(undefined);
                     scope.resolve('regfunc4');
                 });
+
+                xit('should support deeply nested dependencies', function () {
+                    var scope = hilary.scope('af84542', { logging: { level: 'info' } }),
+                        registrations = [],
+                        threshold = 5,
+                        i,
+                        actual;
+
+                    registrations.push(scope.register({
+                        name: 'regdep' + i,
+                        dependencies: ['regdep0'],
+                        factory: function () {
+                            return {
+                                regdep01: 'foo'
+                            };
+                        }
+                    }));
+
+                    for (i = 1; i <= threshold; i += 1) {
+                        registrations.push(scope.register({
+                            name: 'regdep' + i,
+                            dependencies: ['regdep' + (i -1)],
+                            factory: function (arg) {
+                                var self = {}, j;
+
+                                for (j = i; j > 0; j -= 1) {
+                                    self['regdep' + (j - 1)] = arg['regdep' + (j - 1)];
+                                }
+
+                                return self;
+                            }
+                        }));
+                    }
+
+                    actual = scope.resolve('regdep' + (threshold));
+                });
             }); // /when
 
             when('a a module with a different number if dependencies and args is registered', function () {

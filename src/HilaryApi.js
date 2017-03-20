@@ -105,9 +105,10 @@
                     if (hilaryModule.isException) {
                         logger.trace('[TRACE] Invalid registration model:', hilaryModule);
                         next(new Exception({
-                            type: locale.errorTypes.INVALID_ARG,
+                            type: locale.errorTypes.INVALID_REGISTRATION,
                             error: new Error(hilaryModule.error.message),
-                            messages: hilaryModule.messages
+                            messages: hilaryModule.messages,
+                            data: input
                         }));
                     } else {
                         logger.trace('[TRACE] Successfully bound to HilaryModule:', hilaryModule.name);

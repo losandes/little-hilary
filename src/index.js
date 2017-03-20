@@ -4,7 +4,7 @@ if (typeof module !== 'undefined' && module.exports) {
         Exception = require('./Exception'),
         Container = require('./Container')(locale, polyn.is, polyn.Immutable, Exception),
         Context = require('./Context')(polyn.Immutable, Container),
-        HilaryModule = require('./HilaryModule')(polyn.is, polyn.Immutable, polyn.objectHelper),
+        HilaryModule = require('./HilaryModule')(polyn.is, polyn.Blueprint, polyn.objectHelper, locale, Exception),
         Logger = require('./Logger')(polyn.is),
         hilary = require('./HilaryApi')(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
 
@@ -23,7 +23,7 @@ if (typeof module !== 'undefined' && module.exports) {
             Exception = __hilary.Exception,
             Container = __hilary.Container(locale, polyn.is, polyn.Immutable, Exception),
             Context = __hilary.Context(polyn.Immutable, Container),
-            HilaryModule = __hilary.HilaryModule(polyn.is, polyn.Immutable, polyn.objectHelper),
+            HilaryModule = __hilary.HilaryModule(polyn.is, polyn.Blueprint, polyn.objectHelper, locale, Exception),
             Logger = __hilary.Logger(polyn.is);
 
         window.hilary = __hilary.HilaryApi(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);

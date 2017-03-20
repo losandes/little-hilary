@@ -6,25 +6,25 @@
         factory: HilaryModule
     });
 
-    function HilaryModule (is, Immutable, objectHelper) {
-        var IModule = new Immutable({
+    function HilaryModule (is, Blueprint, objectHelper, locale, Exception) {
+        var IModule = new Blueprint({
             __blueprintId: 'Hilary::HilaryModule',
+            isHilaryModule: 'boolean',
             name: 'string',
+            singleton: {
+                type: 'boolean',
+                required: false
+            },            
+            dependencies: {
+                type: 'array',
+                required: false
+            },
             factory: {
                 validate: function (val, errors) {
                     if (!val) {
                         errors.push('This implementation does not satisfy blueprint, Hilary::HilaryModule. It should have the property, factory.');
                     }
                 }
-            },
-            isHilaryModule: 'boolean',
-            singleton: {
-                type: 'boolean',
-                required: false
-            },
-            dependencies: {
-                type: 'array',
-                required: false
             }
         });
 
@@ -42,7 +42,16 @@
                 input.dependencies = objectHelper.getArgumentNames(input.factory);
             }
 
-            return new IModule(input);
+            if (!IModule.validate(input).result) {
+                return new Exception({
+                    type: locale.errorTypes.INVALID_REGISTRATION,
+                    error: new Error(locale.api.REGISTER_ARG + JSON.stringify(input)),
+                    messages: IModule.validate(input).errors,
+                    data: input
+                });
+            }
+
+            return input;
         };
     }
 

@@ -6,6 +6,7 @@
         factory: {
             errorTypes: {
                 INVALID_ARG: 'InvalidArgument',
+                INVALID_REGISTRATION: 'InvalidRegistration',
                 MODULE_NOT_FOUND: 'ModuleNotFound',
                 MODULE_NOT_DEFINED: 'ModuleNotDefined'
             },
