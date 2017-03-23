@@ -14,15 +14,28 @@
             singleton: {
                 type: 'boolean',
                 required: false
-            },            
+            },
             dependencies: {
                 type: 'array',
                 required: false
             },
             factory: {
-                validate: function (val, errors) {
-                    if (!val) {
-                        errors.push('This implementation does not satisfy blueprint, Hilary::HilaryModule. It should have the property, factory.');
+                validate: function (val, errors, input) {
+                    if (is.not.defined(val)) {
+                        errors.push(locale.hilaryModule.FACTORY_UNDEFINED);
+                    } else if (
+                        is.not.function(val) &&
+                        is.array(input.dependencies) &&
+                        input.dependencies.length
+                    ) {
+                        errors.push(locale.hilaryModule.DEPENDENCIES_NO_FACTORY);
+                    } else if (
+                        is.function(val) &&
+                        is.array(input.dependencies) &&
+                        input.dependencies.length &&
+                        val.length !== input.dependencies.length
+                    ) {
+                        errors.push(locale.hilaryModule.DEPENDENCY_FACTORY_MISMATCH);
                     }
                 }
             }

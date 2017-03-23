@@ -13,6 +13,11 @@
             container: {
                 CONSUMER_REQUIRED: 'A consumer function is required to `enumerate` over a container'
             },
+            hilaryModule: {
+                FACTORY_UNDEFINED: 'This implementation does not satisfy blueprint, Hilary::HilaryModule. It should have the property, factory.',
+                DEPENDENCIES_NO_FACTORY: 'Dependencies were declared, but the factory is not a function, so they cannot be applied.',
+                DEPENDENCY_FACTORY_MISMATCH: 'the number of dependencies that were declared does not match the number of arguments that the factory accepts.'
+            },
             api: {
                 REGISTER_ERR: 'register failed. see cause for more information',
                 REGISTER_ARG: 'register expects either a hilary module, or an array of hilary modules as the first argument, but instead saw this: ',

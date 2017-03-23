@@ -104,7 +104,7 @@
 
                     if (hilaryModule.isException) {
                         logger.trace('[TRACE] Invalid registration model:', hilaryModule);
-                        next(new Exception({
+                        return next(new Exception({
                             type: locale.errorTypes.INVALID_REGISTRATION,
                             error: new Error(hilaryModule.error.message),
                             messages: hilaryModule.messages,
@@ -112,7 +112,7 @@
                         }));
                     } else {
                         logger.trace('[TRACE] Successfully bound to HilaryModule:', hilaryModule.name);
-                        next(null, hilaryModule);
+                        return next(null, hilaryModule);
                     }
                 });
 
@@ -148,8 +148,8 @@
                     async.waterfall(tasks, { blocking: true }, function (err, hilaryModule) {
                         if (err) {
                             logger.trace('[TRACE] Registration failed:', input, err);
-                            onError(err);
                             output = err;
+                            onError(err);
                             return;
                         }
 
@@ -238,7 +238,7 @@
 
                                 if (!dependency) {
                                     // short circuit
-                                    logger.warn('[TRACE] the following dependency was not resolved:', item);
+                                    logger.warn('[WARN] the following dependency was not resolved:', item);
                                     return cb(null, dependencies, relyingModuleName);
                                 } else  if (dependency.isException) {
                                     // short circuit
@@ -262,7 +262,7 @@
                                 return next(err);
                             }
 
-                            ctx.resolved = ctx.theModule.factory.apply(null, dependencies);
+                            ctx.resolved = new (Function.prototype.bind.apply(ctx.theModule.factory, [null].concat(dependencies)))();
                             ctx.registerSingleton = ctx.theModule.singleton;
                             ctx.isResolved = true;
 
@@ -271,7 +271,7 @@
                         });
                     } else if (is.function(ctx.theModule.factory) && ctx.theModule.factory.length === 0) {
                         logger.trace('[TRACE] the factory is a function and takes no arguments, returning the result of executing it:', ctx.name);
-                        ctx.resolved = ctx.theModule.factory.call();
+                        ctx.resolved = new (Function.prototype.bind.apply(ctx.theModule.factory, [null]))();
                     } else {
                         // the module takes arguments and has no dependencies, this must be a factory
                         logger.trace('[TRACE] the factory takes arguments and has no dependencies, returning the function as-is:', ctx.name);
@@ -295,6 +295,7 @@
                     next(null, ctx);
                 });
 
+// TODO: this no longer applies
                 tasks.push(function warnOnUndefined (ctx, next) {
                     if (typeof ctx.resolved === 'undefined') {
                         logger.trace('[TRACE] the module was found, but the factory returned undefined:', ctx.name);
@@ -503,18 +504,21 @@
             // Default error handler. This can be overriden)
             */
             onError = function (err) {
-                var exception;
+                async.runAsync(function () {
+// TODO
+                    var exception;
 
-                if (err.isException) {
-                    exception = err;
-                } else {
-                    exception = new Exception({
-                        type: 'UNKNOWN',
-                        error: err
-                    });
-                }
+                    if (err.isException) {
+                        exception = err;
+                    } else {
+                        exception = new Exception({
+                            type: 'UNKNOWN',
+                            error: err
+                        });
+                    }
 
-                resolveErrorHandler().throw(exception);
+                    resolveErrorHandler().throw(exception);
+                }, true);
             };
 
             function optionalAsync(func, err, callback) {

@@ -6,44 +6,43 @@
         Spec: Spec
     });
 
-    function Spec (hilary, describe, when, it, xit, expect, fail) {
-        describe('hilary', function () {
-            when('a single module with no dependencies is registered with an object literal', function () {
-                it('should be able to resolve modules', function () {
-                    var registration,
-                        actual;
+    function Spec (hilary, expect, id) {
+        return {
+            'when a single module with no dependencies is registered with an object literal,': {
+                'it should be able to resolve modules': function () {
+                    // given
+                    var name = id.createUid(8);
 
                     // when
-                    registration = hilary.register({ name: 'test', factory: { foo: 'bar' } });
-                    actual = hilary.resolve('test');
+                    var registration = hilary.register({ name: name, factory: { foo: 'bar' } }),
+                        actual = hilary.resolve(name);
 
                     // then
                     expect(registration.isException).to.equal(undefined);
                     expect(actual.foo).to.equal('bar');
-                });
-            });
-
-            when('a single module with no dependencies is registered with a function', function () {
-                it('should be able to resolve modules', function () {
-                    var scope = hilary.scope('af8454', { logging: { level: 'info' } }),
+                }
+            },
+            'when a single module with no dependencies is registered with a function,': {
+                'it should be able to resolve modules': function () {
+                    var name = id.createUid(8),
+                        scope = hilary.scope(id.createUid(8), { logging: { level: 'info' } }),
                         registration,
                         actual;
 
                     // when
-                    registration = scope.register({ name: 'regfunc', factory: function () {
+                    registration = scope.register({ name: name, factory: function () {
                         return { foo: 'bar' };
                     }});
-                    actual = scope.resolve('regfunc');
+                    actual = scope.resolve(name);
 
                     // then
                     expect(registration.isException).to.equal(undefined);
                     expect(actual.foo).to.equal('bar');
-                });
-            });
-
-            when('a single module with dependencies is registered', function () {
-                it('should be able to resolve modules', function (done) {
-                    var scope = hilary.scope('af84541', { logging: { level: 'info' } }),
+                }
+            },
+            'when a single module with dependencies is registered,': {
+                'it should be able to resolve modules': function (done) {
+                    var scope = hilary.scope(id.createUid(8), { logging: { level: 'info' } }),
                         registration1,
                         registration2,
                         registration3,
@@ -95,52 +94,139 @@
                     expect(registration3.isException).to.equal(undefined);
                     expect(registration4.isException).to.equal(undefined);
                     scope.resolve('regfunc4');
-                });
+                }
+            },
+            'when an object literal is registered as a factory,': {
+                // factory: {}
+                'it should be able to resolve modules': function () {
+                    // when
+                    var registration = hilary.register({
+                        name: 'testobj',
+                        factory: { foo: 'bar' }
+                    });
 
-                xit('should support deeply nested dependencies', function () {
-                    var scope = hilary.scope('af84542', { logging: { level: 'info' } }),
-                        registrations = [],
-                        threshold = 5,
-                        i,
-                        actual;
-
-                    registrations.push(scope.register({
-                        name: 'regdep' + i,
-                        dependencies: ['regdep0'],
-                        factory: function () {
-                            return {
-                                regdep01: 'foo'
-                            };
-                        }
-                    }));
-
-                    for (i = 1; i <= threshold; i += 1) {
-                        registrations.push(scope.register({
-                            name: 'regdep' + i,
-                            dependencies: ['regdep' + (i -1)],
-                            factory: function (arg) {
-                                var self = {}, j;
-
-                                for (j = i; j > 0; j -= 1) {
-                                    self['regdep' + (j - 1)] = arg['regdep' + (j - 1)];
-                                }
-
-                                return self;
-                            }
-                        }));
+                    // then
+                    expect(registration.isException).to.equal(undefined);
+                    expect(hilary.resolve('testobj').foo).to.equal('bar');
+                },
+                'and it has dependencies,': {
+                    // factory: {} MISMATCH
+                    'it should log and return an exception': function () {
+                        expect(hilary.register({
+                            name: 'testobjdep',
+                            dependencies: ['arg1'],
+                            factory: { foo: 'bar' }
+                        }).isException).to.equal(true);
                     }
+                }
+            },
+            'when a number is registered,': {
+                // factory: 42
+                'it should be able to resolve modules': function () {
+                    // when
+                    var registration = hilary.register({
+                        name: 'testnum',
+                        factory: 42
+                    });
 
-                    actual = scope.resolve('regdep' + (threshold));
-                });
-            }); // /when
+                    // then
+                    expect(registration.isException).to.equal(undefined);
+                    expect(hilary.resolve('testnum')).to.equal(42);
+                }
+            },
+            'when a boolean is registered,': {
+                // factory: false
+                'it should be able to resolve modules': function () {
+                    // when
+                    var registration = hilary.register({
+                        name: 'testbool',
+                        factory: false
+                    });
 
-            when('a a module with a different number if dependencies and args is registered', function () {
-                xit('should return an exception', function () {
-                    // TODO
-                    fail();
-                });
-            }); // /when
-        });
+                    // then
+                    expect(registration.isException).to.equal(undefined);
+                    expect(hilary.resolve('testbool')).to.equal(false);
+                }
+            },
+            'when a module with a different number if dependencies and args is registered,': {
+                // factory: function (arg1) {} INCORRECT NUMBER OF ARGS
+                'it should return an exception': function () {
+                    // then
+                    expect(hilary.register({
+                        name: 'testdepmismatch',
+                        dependencies: ['arg1', 'arg2'],
+                        factory: function (arg1) {}
+                    }).isException).to.equal(true);
+                }
+            },
+            'when a module with a class is registered': {
+                // facory: class {}
+                'hilary should be able to resolve modules': function (done) {
+                    var scope = hilary.scope(id.createUid(8), { logging: { level: 'info' } }),
+                        registration1,
+                        registration2,
+                        registration3,
+                        registration4;
+
+                    // when
+                    registration1 = scope.register({ name: 'regfunc1', factory: class {
+                        constructor() {
+                            this.foo = 'bar';
+                        }
+                    }});
+                    registration2 = scope.register({
+                        name: 'regfunc2',
+                        dependencies: ['regfunc1'],
+                        factory: class {
+                            constructor(f1) {
+                                this.f1 = f1;
+                                this.hello = 'world';
+                            }
+                        }
+                    });
+                    registration3 = scope.register({
+                        name: 'regfunc3',
+                        dependencies: ['regfunc1', 'regfunc2'],
+                        factory: class {
+                            constructor(f1, f2) {
+                                this.f1 = f1;
+                                this.f2 = f2;
+                                this.chaka = 'khan';
+                            }
+                        }
+                    });
+                    registration4 = scope.register({
+                        name: 'regfunc4',
+                        dependencies: ['regfunc1', 'regfunc2', 'regfunc3'],
+                        factory: class {
+                            constructor(f1, f2, f3) {
+                                // then
+                                expect(f1.foo).to.equal('bar');
+                                expect(f2.hello).to.equal('world');
+                                expect(f3.chaka).to.equal('khan');
+                                expect(f2.f1.foo).to.equal('bar');
+                                expect(f3.f1.foo).to.equal('bar');
+                                expect(f3.f2.hello).to.equal('world');
+                                done();
+                            }
+                        }
+                    });
+
+                    expect(registration1.isException).to.equal(undefined);
+                    expect(registration2.isException).to.equal(undefined);
+                    expect(registration3.isException).to.equal(undefined);
+                    expect(registration4.isException).to.equal(undefined);
+                    scope.resolve('regfunc4');
+                }
+            }
+
+            // TODO
+            // factory: function () {}
+            // factory: function (arg1) {} // no deps
+            // factory: function (arg1) {} // deps = false
+            // factory: function (arg1) {} // deps = string
+            // factory: function (arg1) {} // matching deps
+        };
     } // /Spec
 
 }(function (registration) {

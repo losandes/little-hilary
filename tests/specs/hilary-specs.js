@@ -6,19 +6,19 @@
         Spec: Spec
     });
 
-    function Spec (hilary, describe, when, it, xit, expect) {
-        describe('hilary', function () {
-            it('should have a default scope', function () {
-                expectObjectToMeetHilaryApi(hilary);
-            });
-
-            when('a new scope is created', function () {
-                it('should return an instance of Hilary', function () {
-                    expectObjectToMeetHilaryApi(hilary.scope('myScope'));
-                });
-
-                it('should support options', function (done) {
-                    var scope = hilary.scope('afkh5435', {
+    function Spec (hilary, expect, id) {
+        return {
+            'when hilary is used without a scope': {
+                'it should demonstrate the same API as a scope': function () {
+                    expectObjectToMeetHilaryApi(hilary);
+                }
+            },
+            'when a new scope is created': {
+                'it should return an instance of hilary': function () {
+                    expectObjectToMeetHilaryApi(hilary.scope(id.createUid(8)));
+                },
+                'it should support options': function (done) {
+                    var scope = hilary.scope(id.createUid(8), {
                         // logging: {
                         //     level: 'trace'
                         // },
@@ -30,18 +30,9 @@
 
                     scope.register({ name: 'nada', factory: function () {} });
                     scope.resolve('nada');
-                });
-
-                // it('should return register and resolve modules', function () {
-                //     var scope = Hilary.scope('myScope');
-                //     var registration = scope.register({ name: 'test', factory: { foo: 'bar' } });
-                //     expect(registration.isException).to.equal(undefined);
-                //     var actual = scope.resolve('test');
-                //     expect(actual.foo).to.equal('bar');
-                //
-                // });
-            });
-        });
+                }
+            }
+        };
 
         function expectObjectToMeetHilaryApi (scope) {
             expect(typeof scope).to.equal('object');
