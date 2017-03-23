@@ -17,20 +17,16 @@
                 'it should return an instance of hilary': function () {
                     expectObjectToMeetHilaryApi(hilary.scope(id.createUid(8)));
                 },
-                'it should support options': function (done) {
-                    var scope = hilary.scope(id.createUid(8), {
-                        // logging: {
-                        //     level: 'trace'
-                        // },
-                        onResolveUndefined: function (err) {
-                            expect(err.isException).to.equal(true);
-                            done();
-                        }
-                    });
-
-                    scope.register({ name: 'nada', factory: function () {} });
-                    scope.resolve('nada');
-                }
+                // 'it should support options': function () {
+                //     var scope = hilary.scope(id.createUid(8), {
+                //         logging: {
+                //             level: 'trace'
+                //         }
+                //     });
+                //
+                //     scope.register({ name: 'nada', factory: function () {} });
+                //     scope.resolve('nada');
+                // }
             }
         };
 

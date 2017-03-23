@@ -295,23 +295,6 @@
                     next(null, ctx);
                 });
 
-// TODO: this no longer applies
-                tasks.push(function warnOnUndefined (ctx, next) {
-                    if (typeof ctx.resolved === 'undefined') {
-                        logger.trace('[TRACE] the module was found, but the factory returned undefined:', ctx.name);
-                        try {
-                            ctx.config.onResolveUndefined(new Exception({
-                                type: locale.errorTypes.MODULE_NOT_DEFINED,
-                                error: new Error(locale.api.MODULE_UNDEFINED + ctx.name)
-                            }));
-                        } catch (e) {
-                            logger.error(e);
-                        }
-                    }
-
-                    next(null, ctx);
-                });
-
                 tasks.push(function bindToOutput (ctx, next) {
                     logger.trace('[TRACE] binding the module to the output:', ctx.name);
                     next(null, ctx.resolved);
@@ -563,12 +546,6 @@
                     } else {
                         self.scope = id.createUid(8);
                     }
-                }
-
-                if (is.function(options.onResolveUndefined)) {
-                    self.onResolveUndefined = options.onResolveUndefined;
-                } else {
-                    self.onResolveUndefined = logger.warn;
                 }
 
                 self.logging = options.logging || { level: 30 };

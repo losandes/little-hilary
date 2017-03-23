@@ -7,8 +7,7 @@
             errorTypes: {
                 INVALID_ARG: 'InvalidArgument',
                 INVALID_REGISTRATION: 'InvalidRegistration',
-                MODULE_NOT_FOUND: 'ModuleNotFound',
-                MODULE_NOT_DEFINED: 'ModuleNotDefined'
+                MODULE_NOT_FOUND: 'ModuleNotFound'
             },
             container: {
                 CONSUMER_REQUIRED: 'A consumer function is required to `enumerate` over a container'
@@ -24,7 +23,6 @@
                 RESOLVE_ARG: 'resolve expects a moduleName (string) as the first argument, but instead saw this: ',
                 MODULE_NOT_FOUND: 'The module, {{module}}, cannot be found, and is a dependency of, {{startingModule}}',
                 MODULE_NOT_RESOLVABLE: 'The module, {{module}}, cannot be resolved because of a dependency exception, causing a ripple effect for, {{startingModule}}',
-                MODULE_UNDEFINED: 'The following module was resolved but returned undefined: ',
                 REGISTRATION_BLACK_LIST: 'A module was registered with a reserved name: ',
                 PARENT_CONTAINER_ARG: 'setParentScope expects the name of the parent scope, or an instance of Hilary'
             }
