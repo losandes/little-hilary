@@ -2,7 +2,7 @@
     'use strict';
 
     register({
-        name: 'hilary',
+        name: 'hilary-specs',
         Spec: Spec
     });
 

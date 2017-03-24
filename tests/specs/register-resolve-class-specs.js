@@ -2,15 +2,16 @@
     'use strict';
 
     register({
-        name: 'hilary',
+        name: 'register-resolve-class-specs',
         Spec: Spec
     });
 
     function Spec (hilary, expect, id) {
         return {
-            'when an es6 class is registered with no dependencies or arguments,': {
+            'when an es6 class with no dependencies or arguments is resolved,': {
                 // facory: class {}
-                'hilary should execute the constructor when it\'s resolved': function () {
+                'hilary should execute the constructor': function () {
+                    // given
                     var scope = hilary.scope(id.createUid(8)),
                         registration1;
 
@@ -94,6 +95,7 @@
             'when es6 classes are registered with undeclared dependencies,': {
                 // facory: class {}
                 'hilary should discover the dependencies': function () {
+                    // given
                     var scope = hilary.scope(id.createUid(8), { logging: { level: 'info' } }),
                         registration1,
                         registration2;
@@ -115,6 +117,7 @@
                         }
                     });
 
+                    // then
                     expect(registration1.isException).to.equal(undefined);
                     expect(registration2.isException).to.equal(undefined);
                     expect(scope.resolve('regfunc2').f1.foo).to.equal('bar');

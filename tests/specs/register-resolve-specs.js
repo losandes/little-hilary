@@ -2,7 +2,7 @@
     'use strict';
 
     register({
-        name: 'hilary',
+        name: 'register-resolve-specs',
         Spec: Spec
     });
 
