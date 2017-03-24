@@ -309,7 +309,7 @@
                             context.parent
                         ) {
                             logger.trace('[TRACE] attempting to resolve the module, ' + ctx.name + ', on the parent scope:', ctx.parent);
-                            return scopes[context.parent].resolveOne(moduleName, relyingModuleName, callback);
+                            return scopes[context.parent].resolve(moduleName, callback);
                         } else if (err) {
                             logger.trace('[TRACE] resolve failed for:', ctx.name, err);
                             onError(err);
@@ -328,8 +328,9 @@
                             err.type === locale.errorTypes.MODULE_NOT_FOUND &&
                             context.parent
                         ) {
-                            logger.trace('[TRACE] attempting to resolve the module, ' + ctx.name + ', on the parent scope:', ctx.parent);
-                            return scopes[context.parent].resolveOne(moduleName, relyingModuleName);
+                            logger.trace('[TRACE] attempting to resolve the module, ' + ctx.name + ', on the parent scope:', context.parent);
+                            output = scopes[context.parent].resolve(moduleName);
+                            return;
                         } else if (err) {
                             logger.trace('[TRACE] resolve failed for:', ctx.name, err);
                             onError(err);
@@ -459,6 +460,15 @@
             }
 
             function resolveErrorHandler () {
+                return {
+                    throw: function (exception) {
+                        logger.error(exception);
+                    }
+                };
+
+
+// TODO
+
                 var tempHandler;
 
                 if (errorHandler) {

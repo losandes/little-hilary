@@ -8,12 +8,12 @@
 
     function Spec (hilary, expect, id) {
         return {
-            'when hilary is used without a scope': {
+            'when hilary is used without a scope,': {
                 'it should demonstrate the same API as a scope': function () {
                     expectObjectToMeetHilaryApi(hilary);
                 }
             },
-            'when a new scope is created': {
+            'when a new scope is created,': {
                 'it should return an instance of hilary': function () {
                     expectObjectToMeetHilaryApi(hilary.scope(id.createUid(8)));
                 },
@@ -47,7 +47,7 @@
                     expect(logged).to.equal(true);
                     expect(scope.context.parent).to.equal(parent.context.scope);
                 },
-                'it should have "default" as the parent scope': function () {
+                'it should default to "default" as the parent scope': function () {
                     var scope = hilary.scope();
                     expect(scope.context.parent).to.equal('default');
                 }
