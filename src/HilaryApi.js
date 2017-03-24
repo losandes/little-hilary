@@ -377,6 +377,7 @@
             // @returns new Hilary scope with parent set to this (the current Hilary scope)
             */
             function scope (name, options, callback) {
+                name = name || id.createUid(8);
                 options = options || {};
                 options.parent = getScopeName(options.parent || self);
 
@@ -458,15 +459,6 @@
             }
 
             function resolveErrorHandler () {
-                return {
-                    throw: function (exception) {
-                        logger.error(exception);
-                    }
-                };
-
-// TODO
-
-
                 var tempHandler;
 
                 if (errorHandler) {
@@ -558,6 +550,12 @@
                 }
 
                 self.logging = options.logging || { level: 30 };
+
+                if (is.string(options.parent)) {
+                    self.parent = options.parent;
+                } else if (options.parent && options.parent.__isHilaryScope) {
+                    self.parent = options.parent.context.scope;
+                }
 
                 return self;
             } // /Config

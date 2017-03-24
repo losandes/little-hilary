@@ -22,10 +22,6 @@
             var context;
             options = options || {};
 
-            if (options.parent && typeof options.parent !== 'string') {
-                options.parent = options.parent.name;
-            }
-
             context = new IContext({
                 scope: options.scope,
                 parent: options.parent,
