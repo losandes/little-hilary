@@ -6,14 +6,49 @@
         Spec: Spec
     });
 
-    function Spec (hilary, expect, id, skip) {
+    function Spec (hilary, expect, id, skipIfBrowser, skipIfNode) {
         return {
             'when a module is resolved,': {
-                'it should gracefully degrade to require': skip(function () {
+                'it should gracefully degrade to require': skipIfBrowser(function () {
+                    // given
+                    var scope = hilary.scope(id.createUid(8), { }),
+                        actual;
 
+                    scope.register({
+                        name: 'foo',
+                        dependencies: ['http'],
+                        factory: function (http) {
+                            this.http = http;
+                        }
+                    });
+
+                    // when
+                    actual = scope.resolve('foo');
+
+                    // then
+                    expect(typeof actual.http.request).to.equal('function');
                 }),
-                'it should gracefully degrade to window': skip(function () {
+                'it should gracefully degrade to window': skipIfNode(function () {
+                    // given
+                    var scope = hilary.scope(id.createUid(8), { }),
+                        moduleName = id.createUid(8),
+                        actual;
 
+                    window[moduleName] = { foo: 'bar' };
+
+                    scope.register({
+                        name: 'foo',
+                        dependencies: [moduleName],
+                        factory: function (onWindow) {
+                            this.onWindow = onWindow;
+                        }
+                    });
+
+                    // when
+                    actual = scope.resolve('foo');
+
+                    // then
+                    expect(typeof actual.onWindow.foo).to.equal('bar');
                 })
             }
         };

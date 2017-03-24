@@ -308,9 +308,18 @@
                             err.type === locale.errorTypes.MODULE_NOT_FOUND &&
                             context.parent
                         ) {
-                            logger.trace('[TRACE] attempting to resolve the module, ' + ctx.name + ', on the parent scope:', ctx.parent);
+                            logger.trace('[TRACE] attempting to resolve the module, ' + ctx.name + ', on the parent scope:', context.parent);
                             return scopes[context.parent].resolve(moduleName, callback);
-                        } else if (err) {
+                        } else if (err && err.type === locale.errorTypes.MODULE_NOT_FOUND) {
+                            logger.trace('[TRACE] attempting to gracefully degrade, ' + ctx.name);
+                            var result = gracefullyDegrade(ctx.name);
+
+                            if (result) {
+                                return callback(null, result);
+                            }
+                        }
+
+                        if (err) {
                             logger.trace('[TRACE] resolve failed for:', ctx.name, err);
                             onError(err);
                             return callback(err);
@@ -331,7 +340,17 @@
                             logger.trace('[TRACE] attempting to resolve the module, ' + ctx.name + ', on the parent scope:', context.parent);
                             output = scopes[context.parent].resolve(moduleName);
                             return;
-                        } else if (err) {
+                        } else if (err && err.type === locale.errorTypes.MODULE_NOT_FOUND) {
+                            logger.trace('[TRACE] attempting to gracefully degrade, ' + ctx.name);
+                            var result = gracefullyDegrade(ctx.name);
+
+                            if (result) {
+                                output = result;
+                                return;
+                            }
+                        }
+
+                        if (err) {
                             logger.trace('[TRACE] resolve failed for:', ctx.name, err);
                             onError(err);
                             output = err;
@@ -608,6 +627,20 @@
               console.log(name + ' is read only');
           }
         });
+    }
+
+    function gracefullyDegrade (moduleName) {
+        if (typeof module !== 'undefined' && module.exports && require) {
+            // attempt to resolve from node's require
+            try {
+                return require(moduleName);
+            } catch (e) {
+                return null;
+            }
+        } else if (typeof window !== 'undefined') {
+            // attempt to resolve from Window
+            return window[moduleName];
+        }
     }
 
 }(function (registration) {

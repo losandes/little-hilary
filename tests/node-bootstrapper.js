@@ -8,6 +8,11 @@ var chai = require('chai'),
         func.skip = true;
         return func;
     },
+    skipIfBrowser = function (func) {
+        'use strict';
+        return func;
+    },
+    skipIfNode = skip,
     fail = function () { 'use strict'; chai.expect(true).to.equal(false); };
 
 // globals: describe, it, xit, before, after
@@ -20,7 +25,7 @@ describe('hilary,', function () {
     run(require('./specs/register-resolve-class-specs.js')(hilary, chai.expect, polyn.id));
     run(require('./specs/register-resolve-function-specs.js')(hilary, chai.expect, polyn.id));
     run(require('./specs/register-resolve-parent-specs.js')(hilary, chai.expect, polyn.id));
-    run(require('./specs/register-resolve-degrade-specs.js')(hilary, chai.expect, polyn.id, skip));
+    run(require('./specs/register-resolve-degrade-specs.js')(hilary, chai.expect, polyn.id, skipIfBrowser, skipIfNode));
 
     function run (spec) {
         var behavior;
