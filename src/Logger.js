@@ -22,6 +22,10 @@
             function log (level, args) {
                 var printer;
 
+                if (options.log) {
+                    /*@override*/ return options.log(level, args);
+                }
+
                 if (level < options.level) {
                     return;
                 }
@@ -48,7 +52,7 @@
         };
 
         function Options (options) {
-            var level;
+            var level, log;
 
             if (typeof options === 'string') {
                 options = {};
@@ -79,8 +83,11 @@
                 level = 30;
             }
 
+            log = is.function(options.logging.log) ? options.logging.log : null;
+
             return {
-                level: level
+                level: level,
+                log: log
             };
         }
     }

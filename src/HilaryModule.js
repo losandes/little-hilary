@@ -53,6 +53,8 @@
                 // generate an array of dependency names from the arguments that
                 // the factory accepts
                 input.dependencies = objectHelper.getArgumentNames(input.factory);
+            } else if (input.dependencies === false) {
+                input.dependencies = [];
             }
 
             if (!IModule.validate(input).result) {

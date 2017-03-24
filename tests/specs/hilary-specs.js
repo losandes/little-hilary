@@ -17,16 +17,22 @@
                 'it should return an instance of hilary': function () {
                     expectObjectToMeetHilaryApi(hilary.scope(id.createUid(8)));
                 },
-                // 'it should support options': function () {
-                //     var scope = hilary.scope(id.createUid(8), {
-                //         logging: {
-                //             level: 'trace'
-                //         }
-                //     });
-                //
-                //     scope.register({ name: 'nada', factory: function () {} });
-                //     scope.resolve('nada');
-                // }
+                'it should support options': function () {
+                    var logged,
+                        scope = hilary.scope(id.createUid(8), {
+                            logging: {
+                                level: 'trace',
+                                log: function () {
+                                    logged = true;
+                                }
+                            }
+                        });
+
+                    scope.register({ name: 'nada', factory: function () {} });
+                    // if the log function above was called, logged will be true,
+                    // and we know that the options were accepted
+                    expect(logged).to.equal(true);
+                }
             }
         };
 

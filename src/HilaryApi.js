@@ -458,6 +458,15 @@
             }
 
             function resolveErrorHandler () {
+                return {
+                    throw: function (exception) {
+                        logger.error(exception);
+                    }
+                };
+
+// TODO
+
+
                 var tempHandler;
 
                 if (errorHandler) {

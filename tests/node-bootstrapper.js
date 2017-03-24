@@ -11,6 +11,8 @@ describe('hilary,', function () {
 
     run(require('./specs/hilary-specs.js')(hilary, chai.expect, polyn.id));
     run(require('./specs/register-resolve-specs.js')(hilary, chai.expect, polyn.id));
+    run(require('./specs/register-resolve-class-specs.js')(hilary, chai.expect, polyn.id));
+    run(require('./specs/register-resolve-function-specs.js')(hilary, chai.expect, polyn.id));
 
     function run (spec) {
         var behavior;
