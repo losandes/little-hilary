@@ -9,19 +9,19 @@
     function Spec (hilary, expect, id) {
         return {
             'when an object literal is registered as a factory,': {
-                'it should be able to resolve modules': registerObjectLiteral,
+                'it should be resolvable': registerObjectLiteral,
                 'and it has dependencies,': {
                     'it should log and return an exception': registerObjectLiteralWithDependencies
                 }
             },
             'when a primitive (number) is registered as a factory,': {
-                'it should be able to resolve modules': registerPrimitiveNumber,
+                'it should be resolvable': registerPrimitiveNumber,
                 'and it has dependencies,': {
                     'it should log and return an exception': registerPrimitiveNumberWithDependencies
                 }
             },
             'when a primitive (boolean) is registered as a factory,': {
-                'it should be able to resolve modules': registerPrimitiveBoolean,
+                'it should be resolvable': registerPrimitiveBoolean,
                 'and it has dependencies,': {
                     'it should log and return an exception': registerPrimitiveBooleanWithDependencies
                 }

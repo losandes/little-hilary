@@ -17,7 +17,7 @@
             'when es6 classes are registered with undeclared dependencies,': {
                 'hilary should generate and resolve the dependencies': generateDependencies
             },
-            'when an es6 class is registered with dependencies': {
+            'when an es6 class is registered with dependencies,': {
                 'and there are a different number of factory arguments': {
                     'hilary should return an Exception': dependencyArgMismatch
                 },

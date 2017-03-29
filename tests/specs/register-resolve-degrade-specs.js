@@ -6,13 +6,13 @@
         Spec: Spec
     });
 
-    function Spec (hilary, expect, id, skipIfBrowser, skipIfNode) {
+    function Spec (hilary, expect, id, ifBrowser, ifNode) {
         return {
             'when a module that is NOT registered is resolved,': {
-                'it should gracefully degrade to require': skipIfBrowser(degradeToRequire),
-                'it should NOT register degraded module as a singleton (node)': skipIfBrowser(degradeToRequireNoSingleton),
-                'it should gracefully degrade to window': skipIfNode(degradeToWindow),
-                'it should NOT register degraded module as a singleton (browser)': skipIfNode(degradeToWindowNoSingleton)
+                'it should gracefully degrade to require': ifNode(degradeToRequire),
+                'it should NOT register degraded module as a singleton (node)': ifNode(degradeToRequireNoSingleton),
+                'it should gracefully degrade to window': ifBrowser(degradeToWindow),
+                'it should NOT register degraded module as a singleton (browser)': ifBrowser(degradeToWindowNoSingleton)
             }
         };
 
