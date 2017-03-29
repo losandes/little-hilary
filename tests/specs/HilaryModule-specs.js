@@ -31,8 +31,10 @@
                 'can be an es6 class': factoryCanBeEs6Class,
                 'must have a function or class factory, if dependencies are defined':
                     factoryMustHaveFactoryIfDependenciesAreDefined,
-                'must have equal number of dependencies and factory args':
-                    factoryMustHaveEvenDependenciesAndFactoryArgs
+                'must have equal number of dependencies and factory args (1)':
+                    factoryMustHaveEvenDependenciesAndFactoryArgs1,
+                'must have equal number of dependencies and factory args (2)':
+                    factoryMustHaveEvenDependenciesAndFactoryArgs2
             },
         };
 
@@ -187,13 +189,27 @@
             expect(actual.messages[0].indexOf(expected) > -1).to.equal(true);
         }
 
-        function factoryMustHaveEvenDependenciesAndFactoryArgs () {
+        function factoryMustHaveEvenDependenciesAndFactoryArgs1 () {
             var expected = 'The number of dependencies that were declared does not match the number of arguments that the factory accepts.',
                 actual = new HilaryModule({
                     name: 'blah',
                     dependencies: ['foo', 'bar'],
                     // jshint -W098
                     factory: function (foo) {}
+                    // jshint +W098
+                });
+
+            expect(actual.isException).to.equal(true);
+            expect(actual.messages[0].indexOf(expected) > -1).to.equal(true);
+        }
+
+        function factoryMustHaveEvenDependenciesAndFactoryArgs2 () {
+            var expected = 'The number of dependencies that were declared does not match the number of arguments that the factory accepts.',
+                actual = new HilaryModule({
+                    name: 'blah',
+                    dependencies: ['foo'],
+                    // jshint -W098
+                    factory: function (foo, bar) {}
                     // jshint +W098
                 });
 
