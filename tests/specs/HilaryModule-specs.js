@@ -6,62 +6,200 @@
         Spec: Spec
     });
 
-    function Spec (HilaryModule, expect, id, skip) {
+    function Spec (HilaryModule, expect) {
         return {
             'HilaryModule.name': {
-                'is required': skip(nameRequired),
-                'must be a string': skip(nameMustBeString)
+                'is required': nameRequired,
+                'must be a string': nameMustBeString
             },
             'HilaryModule.singleton': {
-                'is NOT required': skip(singletonNotRequired),
-                'must be a boolean': skip(singletonMustBeBoolean)
+                'is NOT required': singletonNotRequired,
+                'is true, by default': singletonDefaultTrue,
+                'can be set to false': singletonSetFalse
             },
             'HilaryModule.dependencies': {
-                'is NOT required': skip(dependenciesNotRequired),
-                'must be an array or FALSE': skip(dependenciesMustBeArrayOrFalse),
+                'is NOT required': dependenciesNotRequired,
+                'must be an array or FALSE': dependenciesMustBeArrayOrFalse,
                 'are generated if undefined, and factory takes arguments':
-                    skip(dependenciesAreGeneratedIfUndefinedAndFactoryTakesArgs)
+                    dependenciesAreGeneratedIfUndefinedAndFactoryTakesArgs
             },
             'HilaryModule.factory': {
-                'is required': skip(factoryIsRequired),
-                'can be an object': skip(factoryCanBeObject),
-                'can be a primitive': skip(factoryCanBePrimitive),
-                'can be a function': skip(factoryCanBeFunction),
-                'can be an es6 class': skip(factoryCanBeEs6Class),
+                'is required': factoryIsRequired,
+                'can be an object': factoryCanBeObject,
+                'can be a primitive': factoryCanBePrimitive,
+                'can be a function': factoryCanBeFunction,
+                'can be an es6 class': factoryCanBeEs6Class,
                 'must have a function or class factory, if dependencies are defined':
-                    skip(factoryMustHaveFactoryIfDependenciesAreDefined),
+                    factoryMustHaveFactoryIfDependenciesAreDefined,
                 'must have equal number of dependencies and factory args':
-                    skip(factoryMustHaveEvenDependenciesAndFactoryArgs)
+                    factoryMustHaveEvenDependenciesAndFactoryArgs
             },
         };
 
-        function nameRequired () {}
+        function nameRequired () {
+            var expected = 'It should have the property, name, with type, string',
+                actual = new HilaryModule({
+                    factory: function () {}
+                });
 
-        function nameMustBeString () {}
+            expect(actual.isException).to.equal(true);
+            expect(actual.messages[0].indexOf(expected) > -1).to.equal(true);
+        }
 
-        function singletonNotRequired () {}
+        function nameMustBeString () {
+            var expected = 'It should have the property, name, with type, string',
+                actual = new HilaryModule({
+                    name: 42,
+                    factory: function () {}
+                });
 
-        function singletonMustBeBoolean () {}
+            expect(actual.isException).to.equal(true);
+            expect(actual.messages[0].indexOf(expected) > -1).to.equal(true);
+        }
 
-        function dependenciesNotRequired () {}
+        function singletonNotRequired () {
+            var actual = new HilaryModule({
+                name: 'blah',
+                factory: function () {}
+            });
 
-        function dependenciesMustBeArrayOrFalse () {}
+            expect(actual.isException).to.equal(undefined);
+        }
 
-        function dependenciesAreGeneratedIfUndefinedAndFactoryTakesArgs () {}
+        function singletonDefaultTrue () {
+            var actual = new HilaryModule({
+                name: 'blah',
+                singleton: 42,
+                factory: function () {}
+            });
 
-        function factoryIsRequired () {}
+            expect(actual.singleton).to.equal(true);
+        }
 
-        function factoryCanBeObject () {}
+        function singletonSetFalse () {
+            var actual = new HilaryModule({
+                name: 'blah',
+                singleton: false,
+                factory: function () {}
+            });
 
-        function factoryCanBePrimitive () {}
+            expect(actual.singleton).to.equal(false);
+        }
 
-        function factoryCanBeFunction () {}
+        function dependenciesNotRequired () {
+            var actual = new HilaryModule({
+                name: 'blah',
+                factory: function () {}
+            });
 
-        function factoryCanBeEs6Class () {}
+            expect(actual.isException).to.equal(undefined);
+        }
 
-        function factoryMustHaveFactoryIfDependenciesAreDefined () {}
+        function dependenciesMustBeArrayOrFalse () {
+            var expected = 'It should have the property, dependencies, with type, array',
+                actual = new HilaryModule({
+                    name: 'blah',
+                    dependencies: 42,
+                    factory: function () {}
+                });
 
-        function factoryMustHaveEvenDependenciesAndFactoryArgs () {}
+            expect(actual.isException).to.equal(true);
+            expect(actual.messages[0].indexOf(expected) > -1).to.equal(true);
+        }
+
+        function dependenciesAreGeneratedIfUndefinedAndFactoryTakesArgs () {
+            var actual = new HilaryModule({
+                name: 'blah',
+                // jshint -W098
+                factory: function (foo, bar, baz) {}
+                // jshint +W098
+            });
+
+            expect(actual.isException).to.equal(undefined);
+            expect(actual.dependencies[0]).to.equal('foo');
+            expect(actual.dependencies[1]).to.equal('bar');
+            expect(actual.dependencies[2]).to.equal('baz');
+        }
+
+        function factoryIsRequired () {
+            var expected = 'It should have the property, factory',
+                actual = new HilaryModule({
+                    name: 'blah'
+                });
+
+            expect(actual.isException).to.equal(true);
+            expect(actual.messages[0].indexOf(expected) > -1).to.equal(true);
+        }
+
+        function factoryCanBeObject () {
+            var actual = new HilaryModule({
+                name: 'blah',
+                factory: { foo: 'bar' }
+            });
+
+            expect(actual.isException).to.equal(undefined);
+            expect(actual.factory.foo).to.equal('bar');
+        }
+
+        function factoryCanBePrimitive () {
+            var actual = new HilaryModule({
+                name: 'blah',
+                factory: 42
+            });
+
+            expect(actual.isException).to.equal(undefined);
+            expect(actual.factory).to.equal(42);
+        }
+
+        function factoryCanBeFunction () {
+            var actual = new HilaryModule({
+                name: 'blah',
+                factory: function () { return 42; }
+            });
+
+            expect(actual.isException).to.equal(undefined);
+            expect(actual.factory()).to.equal(42);
+        }
+
+        function factoryCanBeEs6Class () {
+            var actual = new HilaryModule({
+                name: 'blah',
+                factory: class {
+                    constructor () {
+                        this.answer = 42;
+                    }
+                }
+            });
+
+            expect(actual.isException).to.equal(undefined);
+            expect(new actual.factory().answer).to.equal(42);
+        }
+
+        function factoryMustHaveFactoryIfDependenciesAreDefined () {
+            var expected = 'Dependencies were declared, but the factory is not a function, so they cannot be applied.',
+                actual = new HilaryModule({
+                    name: 'blah',
+                    dependencies: ['foo'],
+                    factory: {}
+                });
+
+            expect(actual.isException).to.equal(true);
+            expect(actual.messages[0].indexOf(expected) > -1).to.equal(true);
+        }
+
+        function factoryMustHaveEvenDependenciesAndFactoryArgs () {
+            var expected = 'The number of dependencies that were declared does not match the number of arguments that the factory accepts.',
+                actual = new HilaryModule({
+                    name: 'blah',
+                    dependencies: ['foo', 'bar'],
+                    // jshint -W098
+                    factory: function (foo) {}
+                    // jshint +W098
+                });
+
+            expect(actual.isException).to.equal(true);
+            expect(actual.messages[0].indexOf(expected) > -1).to.equal(true);
+        }
 
     } // /Spec
 

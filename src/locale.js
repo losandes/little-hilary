@@ -15,7 +15,7 @@
             hilaryModule: {
                 FACTORY_UNDEFINED: 'This implementation does not satisfy blueprint, Hilary::HilaryModule. It should have the property, factory.',
                 DEPENDENCIES_NO_FACTORY: 'Dependencies were declared, but the factory is not a function, so they cannot be applied.',
-                DEPENDENCY_FACTORY_MISMATCH: 'the number of dependencies that were declared does not match the number of arguments that the factory accepts.'
+                DEPENDENCY_FACTORY_MISMATCH: 'The number of dependencies that were declared does not match the number of arguments that the factory accepts.'
             },
             api: {
                 REGISTER_ERR: 'register failed. see cause for more information',

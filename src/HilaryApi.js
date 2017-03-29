@@ -47,6 +47,7 @@
 
             setReadOnlyProperty(self, '__isHilaryScope', true);
             setReadOnlyProperty(self, 'context', context);
+            setReadOnlyProperty(self, 'HilaryModule', HilaryModule);
 
             scopes[config.scope] = self;
 

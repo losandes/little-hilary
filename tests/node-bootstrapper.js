@@ -21,7 +21,7 @@ describe('hilary,', function () {
     'use strict';
 
     run(require('./specs/hilary-specs.js')(hilary, chai.expect, polyn.id));
-    run(require('./specs/HilaryModule-specs.js')(hilary, chai.expect, polyn.id, skip));
+    run(require('./specs/HilaryModule-specs.js')(hilary.HilaryModule, chai.expect, polyn.id, skip));
     run(require('./specs/register-resolve-specs.js')(hilary, chai.expect, polyn.id));
     run(require('./specs/register-resolve-class-specs.js')(hilary, chai.expect, polyn.id));
     run(require('./specs/register-resolve-function-specs.js')(hilary, chai.expect, polyn.id));
