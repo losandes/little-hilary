@@ -29,6 +29,10 @@
                 singletonContainer: new Container()
             });
 
+            if (context.isException) {
+                return context;
+            }
+
             context.setParentScope = function (parent) {
                 return IContext.merge({ parent: parent });
             };

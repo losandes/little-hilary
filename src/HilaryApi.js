@@ -35,6 +35,10 @@
 
             context = new Context(config);
 
+            if (context.isException) {
+                return context;
+            }
+
             self = {
                 register: register,
                 resolve: resolve,

@@ -60,7 +60,7 @@
             actual = scope.resolve('foo');
 
             // then
-            expect(typeof actual.onWindow.foo).to.equal('bar');
+            expect(actual.onWindow.foo).to.equal('bar');
         }
 
         function degradeToRequireNoSingleton () {
@@ -108,7 +108,7 @@
             actual = scope.resolve('foo');
 
             // then
-            expect(typeof actual.onWindow.foo).to.equal('bar');
+            expect(actual.onWindow.foo).to.equal('bar');
             expect(scope.context.singletonContainer.resolve(moduleName)).to.equal(undefined);
         }
 

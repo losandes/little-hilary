@@ -6,7 +6,7 @@
         Spec: Spec
     });
 
-    function Spec (hilary, expect, id, skip) {
+    function Spec (hilary, expect) {
         return {
             'Container.get': {
                 'should return the underlying repository': get

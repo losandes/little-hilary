@@ -12,22 +12,15 @@ module.exports = function (grunt) {
             basePath: './',
             frameworks: ['mocha', 'chai'],
             files: [
-                'test/browser/bower_components/jquery/dist/jquery.min.js',
-                'test/browser/bower_components/async/lib/async.js',
-                'test/browser/test.setup.js',
+                'tests/browser-setup.js',
+                'node_modules/polyn/release/polyn.min.js',
                 // hilary
-                // 'release/hilary.js',
                 'release/hilary.js',
-                'release/hilary.jQueryEventEmitter.min.js',
-                'release/hilary.amd.min.js',
-                'release/hilary.moduleExports.js',
-                // mock data
-                'test/mockData.js',
                 // specs
-                { pattern: 'test/*.fixture.js', included: true, served: true }, // watched: false, served: true}
-                { pattern: 'test/browser/*.fixture.js', included: true, served: true },
+                { pattern: 'tests/specs/*specs.js', included: true, served: true }, // watched: false
                 // runner
-                'test/browser/test.js'
+                'tests/testRunner.js',
+                'tests/bootstrapper.js'
             ],
             reporters: ['nyan'],
             reportSlowerThan: 2000,
