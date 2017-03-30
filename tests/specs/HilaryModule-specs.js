@@ -31,9 +31,9 @@
                 'can be an es6 class': factoryCanBeEs6Class,
                 'must have a function or class factory, if dependencies are defined':
                     factoryMustHaveFactoryIfDependenciesAreDefined,
-                'must have equal number of dependencies and factory args (1)':
+                'must have equal number of dependencies and factory args (deps.length > args.length)':
                     factoryMustHaveEvenDependenciesAndFactoryArgs1,
-                'must have equal number of dependencies and factory args (2)':
+                'must have equal number of dependencies and factory args (deps.length < args.length)':
                     factoryMustHaveEvenDependenciesAndFactoryArgs2
             },
         };

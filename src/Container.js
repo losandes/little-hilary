@@ -7,21 +7,17 @@
     });
 
     function Container (locale, is, Immutable, Exception) {
-        return function (options) {
-            var container = {}, self;
-            options = options || {};
-
-            self = {
-                get: get,
-                register: register,
-                resolve: options.makeResolveHandler ?
-                    /*@Override*/ options.makeResolveHandler(resolve) :
-                    resolve,
-                exists: exists,
-                enumerate: enumerate,
-                dispose: dispose,
-                disposeOne: disposeOne
-            };
+        return function () {
+            var container = {},
+                self = {
+                    get: get,
+                    register: register,
+                    resolve: resolve,
+                    exists: exists,
+                    enumerate: enumerate,
+                    dispose: dispose,
+                    disposeOne: disposeOne
+                };
 
             /*
             // provides direct access to the underlying container object
@@ -68,24 +64,28 @@
 
                 for (prop in container) {
                     if (container.hasOwnProperty(prop)) {
+                        // consumer(key, value);
                         consumer(prop, container[prop]);
                     }
                 }
             }
 
             function dispose (moduleName) {
-                var key, i, result;
+                var key, i, tempResult, result, results = { result: true, failures: [] };
 
                 if (is.string(moduleName)) {
                     return self.disposeOne(moduleName);
                 } else if (is.array(moduleName)) {
-                    result = true;
-
                     for (i = 0; i < moduleName.length; i += 1) {
-                        result = result && self.disposeOne(moduleName[i]);
+                        tempResult = self.disposeOne(moduleName[i]);
+                        results.result = results.result && tempResult;
+
+                        if (!tempResult) {
+                            results.failures.push(moduleName[i]);
+                        }
                     }
 
-                    return result;
+                    return results;
                 } else if (!moduleName) {
                     result = true;
 
