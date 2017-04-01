@@ -203,6 +203,8 @@
                 });
 
                 tasks.push(function findModule (ctx, next) {
+                    var message;
+
                     if (ctx.context.singletonContainer.exists(ctx.name)) {
                         logger.trace('[TRACE] found singleton for:', ctx.name);
                         ctx.resolved = context.singletonContainer
@@ -217,9 +219,17 @@
                         next(null, ctx);
                     } else {
                         logger.trace('[TRACE] module not found:', ctx.name);
+                        message = locale.api.MODULE_NOT_FOUND
+                            .replace('{{module}}', ctx.name);
+
+                        if (ctx.name !== ctx.relyingName) {
+                            message += locale.api.MODULE_NOT_FOUND_RELYING
+                                .replace('{{startingModule}}', ctx.relyingName);
+                        }
+
                         next(new Exception({
                             type: locale.errorTypes.MODULE_NOT_FOUND,
-                            error: new Error(locale.api.RESOLVE_ARG),
+                            error: new Error(message),
                             data: {
                                 moduleName: ctx.name,
                                 relyingModuleName: ctx.relyingName
@@ -311,7 +321,8 @@
                         if (
                             err &&
                             err.type === locale.errorTypes.MODULE_NOT_FOUND &&
-                            context.parent
+                            context.parent &&
+                            scopes[context.parent]
                         ) {
                             logger.trace('[TRACE] attempting to resolve the module, ' + ctx.name + ', on the parent scope:', context.parent);
                             return scopes[context.parent].resolve(moduleName, callback);
@@ -340,7 +351,8 @@
                         if (
                             err &&
                             err.type === locale.errorTypes.MODULE_NOT_FOUND &&
-                            context.parent
+                            context.parent &&
+                            scopes[context.parent]
                         ) {
                             logger.trace('[TRACE] attempting to resolve the module, ' + ctx.name + ', on the parent scope:', context.parent);
                             output = scopes[context.parent].resolve(moduleName);
@@ -609,6 +621,7 @@
         };
 
         defaultScope = Api.scope('default');
+        defaultScope.Context = Context;
 
         // REGISTER Default Modules
 // TODO: should these be on the container, as well, since that is normal behavior?

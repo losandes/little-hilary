@@ -10,10 +10,32 @@
         return {
             isException: true,
             type: input.type,
-            error: input.error,
-            messages: input.messages || [],
+            error: normalizeError(input),
+            messages: normalizeMessages(input),
             data: input.data
         };
+    }
+
+    function normalizeError (input) {
+        if (typeof input.error === 'object') {
+            return input.error;
+        } else if (typeof input.error === 'string') {
+            return new Error(input.error);
+        } else {
+            return new Error();
+        }
+    }
+
+    function normalizeMessages (input) {
+        if (Array.isArray(input.messages)) {
+            return input.messages;
+        } else if (typeof input.messages === 'string') {
+            return [input.messages];
+        } else if (input.error && input.error.message) {
+            return [input.error.message];
+        } else {
+            return [];
+        }
     }
 
 }(function (registration) {

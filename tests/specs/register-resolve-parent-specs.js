@@ -15,6 +15,11 @@
             'when a module is resolved, asynchronously,': {
                 'it should step through parent scopes until it finds a match':
                     asyncParentRecursion
+            },
+            'when a scope has a parent, but the parent does NOT exist,': {
+                'and a module is resolved,': {
+                    'it should NOT attempt to step through parent scopes': noParentRecursion
+                }
             }
         };
 
@@ -54,6 +59,26 @@
                 expect(actual.foo).to.equal('bar');
                 done();
             });
+        }
+
+        function noParentRecursion () {
+            // given
+            var scope = hilary.scope(id.createUid(8), {
+                    parent: id.createUid(8),
+                    logging: {
+                        log: function () {}
+                    }
+                }),
+                actual;
+
+            // when
+            actual = scope.resolve('foo');
+
+            // then
+            expect(actual.isException).to.equal(true);
+            expect(actual.type).to.equal('ModuleNotFound');
+            expect(actual.error.message.indexOf('foo')).to.be.above(-1);
+            expect(actual.messages[0].indexOf('foo')).to.be.above(-1);
         }
 
     } // /Spec

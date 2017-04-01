@@ -18,7 +18,10 @@
                 'it should support options': scopeWithOptions,
                 'it should use the current scope as the parent, by default': defaultParentScope,
                 'it should use options.parent (string) as the parent, if set': optionalParentScopeString,
-                'it should use options.parent (scope) as the parent, if set': optionalParentScopeScope
+                'it should use options.parent (scope) as the parent, if set': optionalParentScopeScope,
+                'and the parent is set, but does NOT exist,': {
+                    'it should still set the parent to support out-of-order definitions': optionalParentScopeStringNotFound
+                }
             },
         };
 
@@ -87,6 +90,15 @@
                 });
 
             expect(scope.context.parent).to.equal(parent.context.scope);
+        }
+
+        function optionalParentScopeStringNotFound () {
+            var expected = id.createUid(8), // doesn't exist
+                scope = hilary.scope(id.createUid(8), {
+                    parent: expected
+                });
+
+            expect(scope.context.parent).to.equal(expected);
         }
 
         function expectObjectToMeetHilaryApi (scope) {

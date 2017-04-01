@@ -1,4 +1,4 @@
-/*! little-hilary 2017-03-30 */
+/*! little-hilary 2017-04-01 */
 (function(register) {
     "use strict";
     register({
@@ -878,6 +878,7 @@
             }
         };
         defaultScope = Api.scope("default");
+        defaultScope.Context = Context;
         defaultScope.context.singletonContainer.register({
             name: ASYNC,
             factory: async

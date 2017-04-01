@@ -21,8 +21,10 @@
                 REGISTER_ERR: 'register failed. see cause for more information',
                 REGISTER_ARG: 'register expects either a hilary module, or an array of hilary modules as the first argument, but instead saw this: ',
                 RESOLVE_ARG: 'resolve expects a moduleName (string) as the first argument, but instead saw this: ',
-                MODULE_NOT_FOUND: 'The module, {{module}}, cannot be found, and is a dependency of, {{startingModule}}',
-                MODULE_NOT_RESOLVABLE: 'The module, {{module}}, cannot be resolved because of a dependency exception, causing a ripple effect for, {{startingModule}}',
+                MODULE_NOT_FOUND: 'The module, "{{module}}", cannot be found',
+                MODULE_NOT_FOUND_RELYING: ', and is a dependency of, "{{startingModule}}"',
+                MODULE_NOT_RESOLVABLE: 'The module, "{{module}}", cannot be resolved because of a dependency exception',
+                MODULE_NOT_RESOLVABLE_RELYING: ', causing a ripple effect for, "{{startingModule}}"',
                 REGISTRATION_BLACK_LIST: 'A module was registered with a reserved name: ',
                 PARENT_CONTAINER_ARG: 'setParentScope expects the name of the parent scope, or an instance of Hilary'
             }
