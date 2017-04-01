@@ -8,10 +8,7 @@
 
     function Logger (is) {
         return function (options) {
-            var log;
-
-            options = new Options(options);
-            log = makeLogHandler(options);
+            var log = makeLogHandler(new Options(options));
 
             return {
                 trace: function () { log(10, arguments); },
@@ -65,7 +62,7 @@
             };
         } // /Options
 
-        function makeLogHandler (options) {
+        function makeLogHandler (options) {            
             if (options.log) {
                 return function (level, args) {
                     return options.log(level, args);

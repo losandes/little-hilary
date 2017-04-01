@@ -3,7 +3,6 @@
 
     var ASYNC = 'polyn::async',
         CONTEXT = 'hilary::context',
-        ERROR_HANDLER = 'hilary::error-handler',
         IMMUTABLE = 'polyn::Immutable',
         IS = 'polyn::is',
         PARENT = 'hilary::parent';
@@ -29,9 +28,7 @@
             var self,
                 logger = new Logger(options),
                 config = new Config(options),
-                context,
-                onError,
-                errorHandler;
+                context;
 
             context = new Context(config);
 
@@ -89,8 +86,7 @@
                         data: moduleOrArray
                     });
 
-                    logger.trace('[TRACE] registration failed:', exc);
-                    onError(exc);
+                    logger.error('[ERROR] registration failed:', exc);
                     return exc;
                 }
             }
@@ -121,15 +117,6 @@
                     }
                 });
 
-                tasks.push(function optionallyResetErrorHandler (hilaryModule, next) {
-                    if (hilaryModule.name === ERROR_HANDLER) {
-                        logger.trace('[TRACE] Error handler reset');
-                        errorHandler = null;
-                    }
-
-                    next(null, hilaryModule);
-                });
-
                 tasks.push(function addToContainer (hilaryModule, next) {
                     context.container.register(hilaryModule);
                     logger.trace('[TRACE] Module registered on container', hilaryModule.name);
@@ -139,8 +126,7 @@
                 if (is.function(callback)) {
                     return async.waterfall(tasks, function (err, hilaryModule) {
                         if (err) {
-                            logger.trace('[TRACE] Registration failed:', input, err);
-                            onError(err);
+                            logger.error('[ERROR] Registration failed:', input, err);
                             return callback(err);
                         }
 
@@ -152,9 +138,8 @@
 
                     async.waterfall(tasks, { blocking: true }, function (err, hilaryModule) {
                         if (err) {
-                            logger.trace('[TRACE] Registration failed:', input, err);
+                            logger.error('[ERROR] Registration failed:', input, err);
                             output = err;
-                            onError(err);
                             return;
                         }
 
@@ -336,8 +321,7 @@
                         }
 
                         if (err) {
-                            logger.trace('[TRACE] resolve failed for:', ctx.name, err);
-                            onError(err);
+                            logger.error('[ERROR] resolve failed for:', ctx.name, err);
                             return callback(err);
                         }
 
@@ -368,8 +352,7 @@
                         }
 
                         if (err) {
-                            logger.trace('[TRACE] resolve failed for:', ctx.name, err);
-                            onError(err);
+                            logger.error('[ERROR] resolve failed for:', ctx.name, err);
                             output = err;
                             return;
                         }
@@ -416,7 +399,7 @@
             function scope (name, options, callback) {
                 name = name || id.createUid(8);
                 options = options || {};
-                options.parent = getScopeName(options.parent || self);
+                options.parent = getScopeName(options.parent);
 
                 if (scopes[name]) {
                     logger.trace('[TRACE] returning existing scope:', name);
@@ -495,62 +478,6 @@
                 async.waterfall(tasks, done);
             }
 
-            function resolveErrorHandler () {
-                return {
-                    throw: function (exception) {
-                        logger.error(exception);
-                    }
-                };
-
-
-// TODO
-
-                var tempHandler;
-
-                if (errorHandler) {
-                    return errorHandler;
-                }
-
-                try {
-                    tempHandler = self.resolve(ERROR_HANDLER);
-
-                    if (tempHandler && is.function(tempHandler.throw)) {
-                        logger.trace('[TRACE] using custom error handler for:', self.context.scope);
-                        errorHandler = tempHandler;
-                    } else {
-                        logger.trace('[TRACE] using default error handler for:', self.context.scope);
-                        errorHandler = {
-                            throw: function (exception) {
-                                logger.error(exception);
-                            }
-                        };
-                    }
-                } catch (e) {
-                    logger.warn(e);
-                }
-            }
-
-            /*
-            // Default error handler. This can be overriden)
-            */
-            onError = function (err) {
-                async.runAsync(function () {
-// TODO
-                    var exception;
-
-                    if (err.isException) {
-                        exception = err;
-                    } else {
-                        exception = new Exception({
-                            type: 'UNKNOWN',
-                            error: err
-                        });
-                    }
-
-                    resolveErrorHandler().throw(exception);
-                }, true);
-            };
-
             function optionalAsync(func, err, callback) {
                 if (is.function(callback)) {
                     async.runAsync(function () {
@@ -573,7 +500,7 @@
                 } catch (e) {
                     err.message += '(' + e.message + ')';
                     err.cause = e;
-                    onError(err);
+                    logger.error('[ERROR]', e.message, err);
                     return {
                         err: err,
                         isException: true
@@ -606,6 +533,19 @@
                 return self;
             } // /Config
 
+            function setReadOnlyProperty (obj, name, value) {
+                Object.defineProperty(obj, name, {
+                  enumerable: false,
+                  configurable: false,
+                  get: function () {
+                      return value;
+                  },
+                  set: function () {
+                      logger.warn(name + ' is read only');
+                  }
+                });
+            } // /setReadOnlyProperty
+
             return self;
         }; // /Api
 
@@ -633,19 +573,6 @@
 
         return defaultScope;
     } // /Api
-
-    function setReadOnlyProperty (obj, name, value) {
-        Object.defineProperty(obj, name, {
-          enumerable: false,
-          configurable: false,
-          get: function () {
-              return value;
-          },
-          set: function () {
-              console.log(name + ' is read only');
-          }
-        });
-    }
 
     function gracefullyDegrade (moduleName) {
         if (typeof module !== 'undefined' && module.exports && require) {
