@@ -16,7 +16,7 @@ module.exports = function (grunt) {
     // Default task(s).
     grunt.registerTask('default', ['help']);
     grunt.registerTask('package', ['test']);
-    grunt.registerTask('build', ['uglify:debug', 'uglify:release']);
+    grunt.registerTask('build', ['test']);
     grunt.registerTask('test', ['test-node', 'test-browser']);
     grunt.registerTask('test-node', ['mochaTest']);
     grunt.registerTask('test-browser', [
