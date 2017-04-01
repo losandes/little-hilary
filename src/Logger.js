@@ -11,12 +11,12 @@
             var log = makeLogHandler(new Options(options));
 
             return {
-                trace: function () { log(10, arguments); },
-                debug: function () { log(20, arguments); },
-                info:  function () { log(30, arguments); },
-                warn:  function () { log(40, arguments); },
-                error: function () { log(50, arguments); },
-                fatal: function () { log(60, arguments); },
+                trace: function () { log(10, ['HILARY_TRACE'].concat(arguments)); },
+                debug: function () { log(20, ['HILARY_DEBUG'].concat(arguments)); },
+                info:  function () { log(30, ['HILARY_INFO'].concat(arguments)); },
+                warn:  function () { log(40, ['HILARY_WARN'].concat(arguments)); },
+                error: function () { log(50, ['HILARY_ERROR'].concat(arguments)); },
+                fatal: function () { log(60, ['HILARY_FATAL'].concat(arguments)); },
             };
         };
 
@@ -62,7 +62,7 @@
             };
         } // /Options
 
-        function makeLogHandler (options) {            
+        function makeLogHandler (options) {
             if (options.log) {
                 return function (level, args) {
                     return options.log(level, args);

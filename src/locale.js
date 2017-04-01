@@ -7,7 +7,8 @@
             errorTypes: {
                 INVALID_ARG: 'InvalidArgument',
                 INVALID_REGISTRATION: 'InvalidRegistration',
-                MODULE_NOT_FOUND: 'ModuleNotFound'
+                MODULE_NOT_FOUND: 'ModuleNotFound',
+                BOOTSTRAP_FAILED: 'BootstrapFailed'
             },
             container: {
                 CONSUMER_REQUIRED: 'A consumer function is required to `enumerate` over a container'
