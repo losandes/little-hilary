@@ -50,6 +50,17 @@
             setReadOnlyProperty(self, 'context', context);
             setReadOnlyProperty(self, 'HilaryModule', HilaryModule);
 
+            Object.defineProperty(self, 'name', {
+                enumerable: false,
+                configurable: false,
+                get: function () {
+                  return self.context.scope;
+                },
+                set: function () {
+                  logger.warn(name + ' is read only');
+                }
+            });
+
             scopes[config.scope] = self;
 
             // TODO: this is probably better done with a wrapper
@@ -399,7 +410,9 @@
             function scope (name, options, callback) {
                 name = name || id.createUid(8);
                 options = options || {};
-                options.parent = getScopeName(options.parent);
+                options.parent = self.context.scope === 'default' ?
+                    getScopeName(options.parent) :
+                    getScopeName(options.parent || self);
 
                 if (scopes[name]) {
                     logger.trace('[TRACE] returning existing scope:', name);

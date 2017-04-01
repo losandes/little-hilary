@@ -18,7 +18,7 @@
                 'it should support overriding the logger': scopeWithLogger,
                 'it should support overriding the log level': scopeWithLogLevel,
                 'it should support overriding the log printer': scopeWithLogPrinter,
-                'it should NOT use the current scope as the parent, by default': defaultParentScope,
+                'it should use the current scope as the parent, by default, if the current scope is NOT "default"': defaultParentScope,
                 'it should use options.parent (string) as the parent, if set': optionalParentScopeString,
                 'it should use options.parent (scope) as the parent, if set': optionalParentScopeScope,
                 'and the parent is set, but does NOT exist,': {
@@ -118,7 +118,7 @@
                 scope2 = scope1.scope();
 
             expect(scope1.context.parent).to.equal(null);
-            expect(scope2.context.parent).to.equal(null);
+            expect(scope2.context.parent).to.equal(scope1.name);
         }
 
         function optionalParentScopeString () {
