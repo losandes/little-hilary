@@ -20,10 +20,10 @@ module.exports = function (grunt) {
             './release/hilary.min.js': files
         },
         outputTest = {
-            './tests/hilary.js': files
+            './release-candidate/hilary.js': files
         },
         outputTestMinified = {
-            './tests/hilary.min.js': files
+            './release-candidate/hilary.min.js': files
         };
 
     grunt.loadNpmTasks('grunt-contrib-uglify'); // node
