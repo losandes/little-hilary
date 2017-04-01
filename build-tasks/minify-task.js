@@ -64,7 +64,7 @@ module.exports = function (grunt) {
             },
             files: outputTest
         },
-        TestRelease: {
+        testRelease: {
             options: {
                 banner: banner
                 // mangle: true,

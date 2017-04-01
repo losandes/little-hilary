@@ -21,8 +21,8 @@
                 REGISTER_ERR: "register failed. see cause for more information",
                 REGISTER_ARG: "register expects either a hilary module, or an array of hilary modules as the first argument, but instead saw this: ",
                 RESOLVE_ARG: "resolve expects a moduleName (string) as the first argument, but instead saw this: ",
-                MODULE_NOT_FOUND: "The module, {{module}}, cannot be found, and is a dependency of, {{startingModule}}",
-                MODULE_NOT_RESOLVABLE: "The module, {{module}}, cannot be resolved because of a dependency exception, causing a ripple effect for, {{startingModule}}",
+                MODULE_NOT_FOUND: 'The module, "{{module}}", cannot be found',
+                MODULE_NOT_FOUND_RELYING: ', and is a dependency of, "{{startingModule}}"',
                 REGISTRATION_BLACK_LIST: "A module was registered with a reserved name: ",
                 PARENT_CONTAINER_ARG: "setParentScope expects the name of the parent scope, or an instance of Hilary"
             }
@@ -57,10 +57,30 @@
         return {
             isException: true,
             type: input.type,
-            error: input.error,
-            messages: input.messages || [],
+            error: normalizeError(input),
+            messages: normalizeMessages(input),
             data: input.data
         };
+    }
+    function normalizeError(input) {
+        if (typeof input.error === "object") {
+            return input.error;
+        } else if (typeof input.error === "string") {
+            return new Error(input.error);
+        } else {
+            return new Error();
+        }
+    }
+    function normalizeMessages(input) {
+        if (Array.isArray(input.messages)) {
+            return input.messages;
+        } else if (typeof input.messages === "string") {
+            return [ input.messages ];
+        } else if (input.error && input.error.message) {
+            return [ input.error.message ];
+        } else {
+            return [];
+        }
     }
 })(function(registration) {
     "use strict";
@@ -568,6 +588,7 @@
                     }
                 });
                 tasks.push(function findModule(ctx, next) {
+                    var message;
                     if (ctx.context.singletonContainer.exists(ctx.name)) {
                         logger.trace("[TRACE] found singleton for:", ctx.name);
                         ctx.resolved = context.singletonContainer.resolve(ctx.name).factory;
@@ -580,9 +601,13 @@
                         next(null, ctx);
                     } else {
                         logger.trace("[TRACE] module not found:", ctx.name);
+                        message = locale.api.MODULE_NOT_FOUND.replace("{{module}}", ctx.name);
+                        if (ctx.name !== ctx.relyingName) {
+                            message += locale.api.MODULE_NOT_FOUND_RELYING.replace("{{startingModule}}", ctx.relyingName);
+                        }
                         next(new Exception({
                             type: locale.errorTypes.MODULE_NOT_FOUND,
-                            error: new Error(locale.api.RESOLVE_ARG),
+                            error: new Error(message),
                             data: {
                                 moduleName: ctx.name,
                                 relyingModuleName: ctx.relyingName
@@ -655,7 +680,7 @@
                 });
                 if (is.function(callback)) {
                     async.waterfall(tasks, function(err, results) {
-                        if (err && err.type === locale.errorTypes.MODULE_NOT_FOUND && context.parent) {
+                        if (err && err.type === locale.errorTypes.MODULE_NOT_FOUND && context.parent && scopes[context.parent]) {
                             logger.trace("[TRACE] attempting to resolve the module, " + ctx.name + ", on the parent scope:", context.parent);
                             return scopes[context.parent].resolve(moduleName, callback);
                         } else if (err && err.type === locale.errorTypes.MODULE_NOT_FOUND) {
@@ -678,7 +703,7 @@
                     async.waterfall(tasks, {
                         blocking: true
                     }, function(err, results) {
-                        if (err && err.type === locale.errorTypes.MODULE_NOT_FOUND && context.parent) {
+                        if (err && err.type === locale.errorTypes.MODULE_NOT_FOUND && context.parent && scopes[context.parent]) {
                             logger.trace("[TRACE] attempting to resolve the module, " + ctx.name + ", on the parent scope:", context.parent);
                             output = scopes[context.parent].resolve(moduleName);
                             return;

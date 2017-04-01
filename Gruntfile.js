@@ -15,12 +15,22 @@ module.exports = function (grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['help']);
-    grunt.registerTask('package', ['uglify:debug', 'uglify:release', 'mochaTest', 'karma:unit_' + os, 'copy']);
+    grunt.registerTask('package', ['test']);
     grunt.registerTask('build', ['uglify:debug', 'uglify:release']);
     grunt.registerTask('test', ['test-node', 'test-browser']);
     grunt.registerTask('test-node', ['mochaTest']);
-    grunt.registerTask('test-browser', ['build', 'uglify', 'karma:unit_' + os]);
-    grunt.registerTask('debug', ['build', 'karma:debug_' + os]);
-    grunt.registerTask('debug-browser', ['build', 'karma:debug_' + os]);
+    grunt.registerTask('test-browser', [
+        'uglify:testDebug',     // build hilary for testing
+        'uglify:testRelease',
+        'karma:unit_' + os,     // run the tests
+        'uglify:debug',         // if they pass, build the release
+        'uglify:release'
+    ]);
+    grunt.registerTask('debug', ['debug-browser']);
+    grunt.registerTask('debug-browser', [
+        'uglify:testDebug',     // build hilary for testing
+        'uglify:testRelease',
+        'karma:debug_' + os     // debug the tests
+    ]);
 
 };

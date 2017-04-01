@@ -15,7 +15,7 @@ module.exports = function (grunt) {
                 'tests/browser-setup.js',
                 'node_modules/polyn/release/polyn.min.js',
                 // hilary
-                'release/hilary.js',
+                'tests/hilary.min.js',
                 // specs
                 { pattern: 'tests/specs/*specs.js', included: true, served: true }, // watched: false
                 // runner
