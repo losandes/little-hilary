@@ -301,6 +301,9 @@
                             name: ctx.name,
                             factory: ctx.resolved
                         });
+
+// TODO: add an option to turn off this optimization
+                        context.container.dispose(ctx.name);
                     }
 
                     next(null, ctx);

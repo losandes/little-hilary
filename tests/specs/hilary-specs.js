@@ -25,6 +25,10 @@
                     'it should still set the parent to support out-of-order definitions': optionalParentScopeStringNotFound
                 }
             },
+            // TODO:
+            // exists
+            // dispose
+            // setParentScope
         };
 
         function defaultScope () {

@@ -685,6 +685,7 @@
                             name: ctx.name,
                             factory: ctx.resolved
                         });
+                        context.container.dispose(ctx.name);
                     }
                     next(null, ctx);
                 });
