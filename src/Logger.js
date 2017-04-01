@@ -8,7 +8,12 @@
 
     function Logger (is) {
         return function (options) {
-            var self = {
+            var log;
+
+            options = new Options(options);
+            log = makeLogHandler(options);
+
+            return {
                 trace: function () { log(10, arguments); },
                 debug: function () { log(20, arguments); },
                 info:  function () { log(30, arguments); },
@@ -16,43 +21,10 @@
                 error: function () { log(50, arguments); },
                 fatal: function () { log(60, arguments); },
             };
-
-            options = new Options(options);
-
-            function log (level, args) {
-                var printer;
-
-                if (options.log) {
-                    /*@override*/ return options.log(level, args);
-                }
-
-                if (level < options.level) {
-                    return;
-                }
-
-                switch(level) {
-                    case 60:
-                        printer = console.error || console.log;
-                        break;
-                    case 50:
-                        printer = console.error || console.log;
-                        break;
-                    case 40:
-                        printer = console.warn || console.log;
-                        break;
-                    default:
-                        printer = console.log;
-                        break;
-                }
-
-                printer.apply(null, args);
-            }
-
-            return self;
         };
 
         function Options (options) {
-            var level, log;
+            var level, log, printer;
 
             if (typeof options === 'string') {
                 options = {};
@@ -84,13 +56,56 @@
             }
 
             log = is.function(options.logging.log) ? options.logging.log : null;
+            printer = is.function(options.logging.printer) ? options.logging.printer : null;
 
             return {
                 level: level,
-                log: log
+                log: log,
+                printer: printer
             };
-        }
-    }
+        } // /Options
+
+        function makeLogHandler (options) {
+            if (options.log) {
+                return function (level, args) {
+                    return options.log(level, args);
+                };
+            } else if (options.printer) {
+                return function (level, args) {
+                    if (level < options.level) {
+                        return;
+                    }
+
+                    return options.printer.apply(null, args);
+                };
+            } else {
+                return function (level, args) {
+                    var printer;
+
+                    if (level < options.level) {
+                        return;
+                    }
+
+                    switch(level) {
+                        case 60:
+                            printer = console.error || console.log;
+                            break;
+                        case 50:
+                            printer = console.error || console.log;
+                            break;
+                        case 40:
+                            printer = console.warn || console.log;
+                            break;
+                        default:
+                            printer = console.log;
+                            break;
+                    }
+
+                    printer.apply(null, args);
+                };
+            }
+        } // /makeLogHandler
+    } // /Logger
 
 }(function (registration) {
     'use strict';

@@ -15,7 +15,9 @@
                 'it should return an instance of hilary': newScope,
                 'it should use the given name': namedScope,
                 'it should generate a name for the scope, if name arg is falsey': generatesName,
-                'it should support options': scopeWithOptions,
+                'it should support overriding the logger': scopeWithLogger,
+                'it should support overriding the log level': scopeWithLogLevel,
+                'it should support overriding the log printer': scopeWithLogPrinter,
                 'it should use the current scope as the parent, by default': defaultParentScope,
                 'it should use options.parent (string) as the parent, if set': optionalParentScopeString,
                 'it should use options.parent (scope) as the parent, if set': optionalParentScopeScope,
@@ -46,7 +48,7 @@
             expect(typeof scope.context.scope).to.equal('string');
         }
 
-        function scopeWithOptions () {
+        function scopeWithLogger () {
             var logged,
                 parent = hilary.scope(),
                 scope = hilary.scope(id.createUid(8), {
@@ -64,6 +66,51 @@
             // and we know that the options were accepted
             expect(logged).to.equal(true);
             expect(scope.context.parent).to.equal(parent.context.scope);
+        }
+
+        function scopeWithLogPrinter () {
+            var logged,
+                scope = hilary.scope(id.createUid(8), {
+                    logging: {
+                        level: 'trace',
+                        printer: function () {
+                            logged = true;
+                        }
+                    }
+                });
+
+            scope.register({ name: 'nada', factory: function () {} });
+            // if the log function above was called, logged will be true,
+            // and we know that the options were accepted
+            expect(logged).to.equal(true);
+        }
+
+        function scopeWithLogLevel () {
+            var traceCount = 0,
+                errorCount = 0,
+                traceScope = hilary.scope(id.createUid(8), {
+                    logging: {
+                        level: 'trace',
+                        printer: function () {
+                            // will print everything
+                            traceCount += 1;
+                        }
+                    }
+                }),
+                errorScope = hilary.scope(id.createUid(8), {
+                    logging: {
+                        level: 'error',
+                        printer: function () {
+                            // will not print anything other than error and fatal
+                            errorCount += 1;
+                        }
+                    }
+                });
+
+            traceScope.resolve(id.createUid(8));
+            errorScope.resolve(id.createUid(8));
+
+            expect(traceCount).to.be.above(errorCount);
         }
 
         function defaultParentScope () {
