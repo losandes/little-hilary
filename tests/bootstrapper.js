@@ -14,6 +14,7 @@
 
     testRunner.describe('hilary,', function () {
         testRunner.run(require('./specs/Container-specs')(hilary, chai.expect));
+        testRunner.run(require('./specs/exists-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/hilary-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/HilaryModule-specs')(hilary.HilaryModule, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/parent-specs')(hilary, chai.expect, polyn.id, skip));

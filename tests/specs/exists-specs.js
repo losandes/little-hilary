@@ -2,12 +2,47 @@
     'use strict';
 
     register({
-        name: 'MySpec',
+        name: 'exists-specs',
         Spec: Spec
     });
 
-    function Spec () {
+    function Spec (hilary, expect, id) {
+        return {
+            'when exists is called with an existing module name': {
+                'it should return true': existsTrue
+            },
+            'when exists is called with a module name that does NOT exist': {
+                'it should return false': existsFalse
+            }
+        };
 
+        function existsTrue () {
+            // given
+            var scope = hilary.scope(id.createUid(8)),
+                name = id.createUid(8),
+                actual;
+
+            scope.register({ name: name, factory: { foo: 'bar' }});
+
+            // when
+            actual = scope.exists(name);
+
+            // then
+            expect(actual).to.equal(true);
+        }
+
+        function existsFalse () {
+            // given
+            var scope = hilary.scope(id.createUid(8)),
+                name = id.createUid(8),
+                actual;
+
+            // when
+            actual = scope.exists(name);
+
+            // then
+            expect(actual).to.equal(false);
+        }
     } // /Spec
 
 }(function (registration) {
