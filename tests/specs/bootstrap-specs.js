@@ -2,12 +2,16 @@
     'use strict';
 
     register({
-        name: 'hilary-bootstrap-specs',
+        name: 'bootstrap-specs',
         Spec: Spec
     });
 
-    function Spec () {
-
+    function Spec (hilary, expect, id, skip) {
+        return {
+            'TODO': {
+                'TODO': skip()
+            }
+        }
     } // /Spec
 
 }(function (registration) {

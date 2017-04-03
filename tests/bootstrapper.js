@@ -12,6 +12,7 @@
         };
 
     testRunner.describe('hilary,', function () {
+        testRunner.run(require('./specs/bootstrap-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/Container-specs')(hilary, chai.expect));
         testRunner.run(require('./specs/dispose-async-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/dispose-specs')(hilary, chai.expect, polyn.id, skip));
