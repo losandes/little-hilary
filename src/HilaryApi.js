@@ -384,35 +384,47 @@
             // @returns true if the module exists, otherwise false
             */
             function exists (moduleName) {
-                logger.trace('checking if module exists:', moduleName);
+                logger.debug('checking if module exists:', moduleName);
                 return context.container.exists(moduleName);
             }
 
             /*
             // Disposes a module, or all modules. When a moduleName is not passed
             // as an argument, the entire container is disposed.
-            // @param moduleName (string): The name of the module to dispose
+            // @param moduleNames (string): The name of the module to dispose
             // @returns boolean: true if the object(s) were disposed, otherwise false
             */
-            function dispose (moduleName, callback) {
-                logger.trace('disposing module(s):', moduleName);
+            function dispose (moduleNames, callback) {
+                var nameOrArr, cb;
+
+                if (typeof moduleNames === 'function') {
+                    logger.debug('disposing all modules on scope, ' + self.name);
+                    nameOrArr = null;
+                    cb = moduleNames;
+                } else {
+                    logger.debug('disposing module(s) on scope, ' + self.name + ':', moduleNames);
+                    nameOrArr = moduleNames;
+                    cb = callback;
+                }
+
+
                 return optionalAsync(function () {
                     var results;
 
-                    if (is.array(moduleName)) {
-                        results = context.container.dispose(moduleName).disposed.concat(
-                            context.singletonContainer.dispose(moduleName).disposed
+                    if (is.array(nameOrArr)) {
+                        results = context.container.dispose(nameOrArr).disposed.concat(
+                            context.singletonContainer.dispose(nameOrArr).disposed
                         );
 
                         return {
-                            result: results.length === moduleName.length,
+                            result: results.length === nameOrArr.length,
                             disposed: results
                         };
                     }
 
-                    return context.container.dispose(moduleName) ||
-                        context.singletonContainer.dispose(moduleName);
-                }, callback);
+                    return context.container.dispose(nameOrArr) ||
+                        context.singletonContainer.dispose(nameOrArr);
+                }, new Error(), cb);
             }
 
             /*
@@ -430,9 +442,9 @@
                     getScopeName(options.parent || self);
 
                 if (scopes[name]) {
-                    logger.trace('returning existing scope:', name);
+                    logger.debug('returning existing scope:', name);
                 } else {
-                    logger.trace('creating new scope:', name, options);
+                    logger.debug('creating new scope:', name, options);
                 }
 
                 return optionalAsync(function () {

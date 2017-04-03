@@ -6,7 +6,7 @@
         Spec: Spec
     });
 
-    function Spec (hilary, expect, id, skip) {
+    function Spec (hilary, expect, id) {
         return {
             'when dispose is given a single module name,': {
                 'it should dispose only that module': disposeByName,
