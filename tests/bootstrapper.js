@@ -16,10 +16,10 @@
         testRunner.run(require('./specs/Container-specs')(hilary, chai.expect));
         testRunner.run(require('./specs/hilary-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/HilaryModule-specs')(hilary.HilaryModule, chai.expect, polyn.id, skip));
+        testRunner.run(require('./specs/parent-specs')(hilary, chai.expect, polyn.id));
         testRunner.run(require('./specs/register-resolve-specs')(hilary, chai.expect, polyn.id));
         testRunner.run(require('./specs/register-resolve-class-specs')(hilary, chai.expect, polyn.id));
         testRunner.run(require('./specs/register-resolve-function-specs')(hilary, chai.expect, polyn.id));
-        testRunner.run(require('./specs/register-resolve-parent-specs')(hilary, chai.expect, polyn.id));
         testRunner.run(require('./specs/register-resolve-degrade-specs')(hilary, chai.expect, polyn.id, ifBrowser, ifNode));
     });
 

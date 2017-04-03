@@ -1,4 +1,4 @@
-/*! little-hilary 2017-04-01 */
+/*! little-hilary 2017-04-03 */
 (function(register) {
     "use strict";
     register({
@@ -471,7 +471,7 @@
 
 (function(register) {
     "use strict";
-    var ASYNC = "polyn::async", CONTEXT = "hilary::context", IMMUTABLE = "polyn::Immutable", IS = "polyn::is", PARENT = "hilary::parent";
+    var ASYNC = "polyn::async", CONTEXT = "hilary::context", IMMUTABLE = "polyn::Immutable", IS = "polyn::is";
     register({
         name: "HilaryApi",
         factory: HilaryApi
@@ -685,6 +685,7 @@
                             name: ctx.name,
                             factory: ctx.resolved
                         });
+                        logger.trace("removing the resolved module registration: ", ctx.name);
                         context.container.dispose(ctx.name);
                     }
                     next(null, ctx);
@@ -909,12 +910,6 @@
         defaultScope.context.singletonContainer.register({
             name: IS,
             factory: is
-        });
-        defaultScope.context.singletonContainer.register({
-            name: PARENT,
-            factory: function() {
-                return defaultScope.context.parent;
-            }
         });
         return defaultScope;
     }

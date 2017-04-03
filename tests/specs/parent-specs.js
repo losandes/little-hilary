@@ -2,7 +2,7 @@
     'use strict';
 
     register({
-        name: 'register-resolve-parent-specs',
+        name: 'parent-specs',
         Spec: Spec
     });
 

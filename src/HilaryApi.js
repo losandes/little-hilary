@@ -4,8 +4,7 @@
     var ASYNC = 'polyn::async',
         CONTEXT = 'hilary::context',
         IMMUTABLE = 'polyn::Immutable',
-        IS = 'polyn::is',
-        PARENT = 'hilary::parent';
+        IS = 'polyn::is';
 
     register({
         name: 'HilaryApi',
@@ -302,7 +301,7 @@
                             factory: ctx.resolved
                         });
 
-// TODO: add an option to turn off this optimization
+                        logger.trace('removing the resolved module registration: ', ctx.name);
                         context.container.dispose(ctx.name);
                     }
 
@@ -588,7 +587,6 @@
         defaultScope.context.singletonContainer.register({ name: CONTEXT,      singleton: false, factory: function () { return defaultScope.context; } });
         defaultScope.context.singletonContainer.register({ name: IMMUTABLE,    factory: Immutable });
         defaultScope.context.singletonContainer.register({ name: IS,           factory: is });
-        defaultScope.context.singletonContainer.register({ name: PARENT,       factory: function () { return defaultScope.context.parent; } });
 
         return defaultScope;
     } // /Api

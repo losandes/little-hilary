@@ -9,7 +9,8 @@
     function Spec (hilary, expect, id) {
         return {
             'when hilary is used without a scope,': {
-                'it should demonstrate the same API as a scope': defaultScope
+                'it should demonstrate the same API as a scope': defaultScope,
+                'it should have some default registrations': defaultRegistrations
             },
             'when a new scope is created,': {
                 'it should return an instance of hilary': newScope,
@@ -37,6 +38,41 @@
 
         function newScope () {
             expectObjectToMeetHilaryApi(hilary.scope());
+        }
+
+        function defaultRegistrations () {
+            // given
+            var ASYNC = 'polyn::async',
+                CONTEXT = 'hilary::context',
+                IMMUTABLE = 'polyn::Immutable',
+                IS = 'polyn::is',
+                //
+                name = id.createUid(8),
+                registration = hilary.register({
+                    name: name,
+                    dependencies: [ASYNC, CONTEXT, IMMUTABLE, IS],
+                    factory: function (async, context, Immutable, is) {
+                        return {
+                            async: async,
+                            context: context,
+                            Immutable: Immutable,
+                            is: is
+                        };
+                    }
+                }),
+                actual;
+
+            // when
+            // jshint -W030
+            expect(registration.isException).to.be.undefined;
+            // jshint +W030
+            actual = hilary.resolve(name);
+
+            // then
+            expect(typeof actual.async).to.equal('object');
+            expect(typeof actual.context).to.equal('function');
+            expect(typeof actual.Immutable).to.equal('function');
+            expect(typeof actual.is).to.equal('object');
         }
 
         function namedScope () {
