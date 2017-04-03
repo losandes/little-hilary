@@ -484,7 +484,7 @@
 
 (function(register) {
     "use strict";
-    var ASYNC = "polyn::async", CONTEXT = "hilary::context", IMMUTABLE = "polyn::Immutable", IS = "polyn::is";
+    var ASYNC = "polyn::async", CONTEXT = "hilary::context", IMMUTABLE = "polyn::Immutable", IS = "polyn::is", DEFAULT = "default";
     register({
         name: "HilaryApi",
         factory: HilaryApi
@@ -543,7 +543,7 @@
             }
             function registerOne(input, err, callback) {
                 var tasks = [];
-                if (input && input.scope && input.scope !== self.name) {
+                if (self.name === DEFAULT && input && input.scope && input.scope !== DEFAULT) {
                     return self.scope(input.scope).register(input, callback);
                 }
                 tasks.push(function bind(next) {
@@ -787,7 +787,7 @@
             function scope(name, options, callback) {
                 name = name || id.createUid(8);
                 options = options || {};
-                options.parent = self.context.scope === "default" ? getScopeName(options.parent) : getScopeName(options.parent || self);
+                options.parent = self.context.scope === DEFAULT ? getScopeName(options.parent) : getScopeName(options.parent || self);
                 if (scopes[name]) {
                     logger.debug("returning existing scope:", name);
                 } else {
@@ -923,7 +923,7 @@
                 return scopes[name];
             }
         };
-        defaultScope = Api.scope("default");
+        defaultScope = Api.scope(DEFAULT);
         defaultScope.Context = Context;
         defaultScope.context.singletonContainer.register({
             name: ASYNC,

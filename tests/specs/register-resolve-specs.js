@@ -35,6 +35,9 @@
                 },
                 'and that scope matches the scope register was called on': {
                     'it should not recurse': skip()
+                },
+                'and the current scope is NOT default': {
+                    'it should ignore the scope declaration': skip()
                 }
             }
         };

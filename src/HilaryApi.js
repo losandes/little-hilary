@@ -4,7 +4,8 @@
     var ASYNC = 'polyn::async',
         CONTEXT = 'hilary::context',
         IMMUTABLE = 'polyn::Immutable',
-        IS = 'polyn::is';
+        IS = 'polyn::is',
+        DEFAULT = 'default';
 
     register({
         name: 'HilaryApi',
@@ -110,9 +111,9 @@
             function registerOne (input, err, callback) {
                 var tasks = [];
 
-                if (input && input.scope && input.scope !== self.name) {
+                if (self.name === DEFAULT && input && input.scope && input.scope !== DEFAULT) {
                     // the module declares the scope that is meant to be
-                    // registered to, and it is not this scope
+                    // registered to, and it is not 'default'
                     return self.scope(input.scope).register(input, callback);
                 }
 
@@ -443,7 +444,7 @@
             function scope (name, options, callback) {
                 name = name || id.createUid(8);
                 options = options || {};
-                options.parent = self.context.scope === 'default' ?
+                options.parent = self.context.scope === DEFAULT ?
                     getScopeName(options.parent) :
                     getScopeName(options.parent || self);
 
@@ -609,7 +610,7 @@
             }
         };
 
-        defaultScope = Api.scope('default');
+        defaultScope = Api.scope(DEFAULT);
         defaultScope.Context = Context;
 
         // REGISTER Default Modules
