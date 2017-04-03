@@ -9,8 +9,7 @@
             func = func || function () {};
             func.skip = true;
             return func;
-        },
-        fail = function () { chai.expect(true).to.equal(false); };
+        };
 
     testRunner.describe('hilary,', function () {
         testRunner.run(require('./specs/Container-specs')(hilary, chai.expect));
@@ -24,6 +23,9 @@
         testRunner.run(require('./specs/register-resolve-class-specs')(hilary, chai.expect, polyn.id));
         testRunner.run(require('./specs/register-resolve-function-specs')(hilary, chai.expect, polyn.id));
         testRunner.run(require('./specs/register-resolve-degrade-specs')(hilary, chai.expect, polyn.id, ifBrowser, ifNode));
+        testRunner.run(require('./specs/register-resolve-error-specs')(hilary, chai.expect, polyn.id, skip));
+        testRunner.run(require('./specs/scope-async-specs')(hilary, chai.expect, polyn.id, skip));
+        testRunner.run(require('./specs/scope-specs')(hilary, chai.expect, polyn.id, skip));
     });
 
 }(

@@ -148,7 +148,7 @@
             function dispose(moduleName) {
                 var key, i, tempResult, result, results = {
                     result: true,
-                    failures: []
+                    disposed: []
                 };
                 if (is.string(moduleName)) {
                     return self.disposeOne(moduleName);
@@ -156,8 +156,8 @@
                     for (i = 0; i < moduleName.length; i += 1) {
                         tempResult = self.disposeOne(moduleName[i]);
                         results.result = results.result && tempResult;
-                        if (!tempResult) {
-                            results.failures.push(moduleName[i]);
+                        if (tempResult) {
+                            results.disposed.push(moduleName[i]);
                         }
                     }
                     return results;
@@ -353,22 +353,22 @@
             var log = makeLogHandler(new Options(options));
             return {
                 trace: function() {
-                    log(10, [ "HILARY_TRACE" ].concat(arguments));
+                    log(10, arguments);
                 },
                 debug: function() {
-                    log(20, [ "HILARY_DEBUG" ].concat(arguments));
+                    log(20, arguments);
                 },
                 info: function() {
-                    log(30, [ "HILARY_INFO" ].concat(arguments));
+                    log(30, arguments);
                 },
                 warn: function() {
-                    log(40, [ "HILARY_WARN" ].concat(arguments));
+                    log(40, arguments);
                 },
                 error: function() {
-                    log(50, [ "HILARY_ERROR" ].concat(arguments));
+                    log(50, arguments);
                 },
                 fatal: function() {
-                    log(60, [ "HILARY_FATAL" ].concat(arguments));
+                    log(60, arguments);
                 }
             };
         };
@@ -755,23 +755,40 @@
                 }
             }
             function exists(moduleName) {
-                logger.trace("checking if module exists:", moduleName);
+                logger.debug("checking if module exists:", moduleName);
                 return context.container.exists(moduleName);
             }
-            function dispose(moduleName, callback) {
-                logger.trace("disposing module(s):", moduleName);
+            function dispose(moduleNames, callback) {
+                var nameOrArr, cb;
+                if (typeof moduleNames === "function") {
+                    logger.debug("disposing all modules on scope, " + self.name);
+                    nameOrArr = null;
+                    cb = moduleNames;
+                } else {
+                    logger.debug("disposing module(s) on scope, " + self.name + ":", moduleNames);
+                    nameOrArr = moduleNames;
+                    cb = callback;
+                }
                 return optionalAsync(function() {
-                    return context.container.dispose(moduleName) && context.singletonContainer.dispose(moduleName);
-                }, callback);
+                    var results;
+                    if (is.array(nameOrArr)) {
+                        results = context.container.dispose(nameOrArr).disposed.concat(context.singletonContainer.dispose(nameOrArr).disposed);
+                        return {
+                            result: results.length === nameOrArr.length,
+                            disposed: results
+                        };
+                    }
+                    return context.container.dispose(nameOrArr) || context.singletonContainer.dispose(nameOrArr);
+                }, new Error(), cb);
             }
             function scope(name, options, callback) {
                 name = name || id.createUid(8);
                 options = options || {};
                 options.parent = self.context.scope === "default" ? getScopeName(options.parent) : getScopeName(options.parent || self);
                 if (scopes[name]) {
-                    logger.trace("returning existing scope:", name);
+                    logger.debug("returning existing scope:", name);
                 } else {
-                    logger.trace("creating new scope:", name, options);
+                    logger.debug("creating new scope:", name, options);
                 }
                 return optionalAsync(function() {
                     return Api.scope(name, options);

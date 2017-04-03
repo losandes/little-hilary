@@ -2,21 +2,21 @@
     'use strict';
 
     register({
-        name: 'dispose-specs',
+        name: 'dispose-async-specs',
         Spec: Spec
     });
 
     function Spec (hilary, expect, id) {
         return {
-            'when dispose is given a single module name,': {
+            'when dispose is given a single module name (async),': {
                 'it should dispose only that module': disposeByName,
                 'it should return false, if no module is found': disposeByNameNotFound
             },
-            'when dispose is given an array of module names,': {
+            'when dispose is given an array of module names (async),': {
                 'it should dispose each of those modules': disposeMany,
                 'it should return a result of false, with an array of missing modules, if any module is NOT found': disposeManyNotFound
             },
-            'when dispose is given no arguments,': {
+            'when dispose is given no arguments (async),': {
                 'it should dispose all modules': disposeAll
             }
         };

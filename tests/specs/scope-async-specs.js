@@ -2,16 +2,28 @@
     'use strict';
 
     register({
-        name: 'register-resolve-error-specs',
+        name: 'scope-async-specs',
         Spec: Spec
     });
 
-    function Spec (hilary, expect, id, skip) {
+    function Spec (hilary, expect, id) {
         return {
-            'TODO': {
-                'TODO': skip()
+            'when a new scope is created (async),': {
+                'it should execute the callback': namedScope
             }
         };
+
+        function namedScope (done) {
+            var name = id.createUid(8);
+
+            // when
+            hilary.scope(name, {}, function (err, scope) {
+                // then
+                expect(err).to.equal(null);
+                expect(scope.context.scope).to.equal(name);
+                done();
+            });
+        }
 
     } // /Spec
 
