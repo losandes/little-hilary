@@ -26,7 +26,6 @@
                 'should enumerate each module, executing the consumer function': enumerate,
                 'should return an Exception, if the consumer is not a function': enumerateInvalidArg
             },
-
             'Container.dispose,': {
                 'when given a single module name,': {
                     'it should dispose only that module': disposeByName,
@@ -155,14 +154,19 @@
             // given
             var sut = new Container(),
                 actual;
-            sut.register({name: 'test', factory: { foo: 'bar' }});
+            sut.register({name: 'test1', factory: { foo: 'bar' }});
+            sut.register({name: 'test2', factory: { foo: 'bar' }});
+
+            expect(sut.resolve('test1').name).to.equal('test1');
+            expect(sut.resolve('test2').name).to.equal('test2');
 
             // when
-            actual = sut.dispose('test');
+            actual = sut.dispose('test1');
 
             // then
             expect(actual).to.equal(true);
-            expect(sut.resolve('test')).to.equal(undefined);
+            expect(sut.resolve('test1')).to.equal(undefined);
+            expect(sut.resolve('test2').name).to.equal('test2');
         }
 
         function disposeByNameNotFound () {
@@ -189,7 +193,7 @@
 
             // then
             expect(actual.result).to.equal(true);
-            expect(actual.failures.length).to.equal(0);
+            expect(actual.disposed.length).to.equal(2);
             expect(sut.resolve('test1')).to.equal(undefined);
             expect(sut.resolve('test2')).to.equal(undefined);
         }
@@ -205,7 +209,7 @@
 
             // then
             expect(actual.result).to.equal(false);
-            expect(actual.failures.indexOf('test2')).to.equal(0);
+            expect(actual.disposed.indexOf('test2')).to.equal(-1);
         }
 
         function disposeAll () {

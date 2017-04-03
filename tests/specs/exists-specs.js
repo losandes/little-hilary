@@ -8,10 +8,10 @@
 
     function Spec (hilary, expect, id) {
         return {
-            'when exists is called with an existing module name': {
+            'when exists is called with an existing module name,': {
                 'it should return true': existsTrue
             },
-            'when exists is called with a module name that does NOT exist': {
+            'when exists is called with a module name that does NOT exist,': {
                 'it should return false': existsFalse
             }
         };

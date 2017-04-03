@@ -397,7 +397,20 @@
             function dispose (moduleName, callback) {
                 logger.trace('disposing module(s):', moduleName);
                 return optionalAsync(function () {
-                    return context.container.dispose(moduleName) &&
+                    var results;
+
+                    if (is.array(moduleName)) {
+                        results = context.container.dispose(moduleName).disposed.concat(
+                            context.singletonContainer.dispose(moduleName).disposed
+                        );
+
+                        return {
+                            result: results.length === moduleName.length,
+                            disposed: results
+                        };
+                    }
+
+                    return context.container.dispose(moduleName) ||
                         context.singletonContainer.dispose(moduleName);
                 }, callback);
             }

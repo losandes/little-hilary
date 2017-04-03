@@ -71,7 +71,7 @@
             }
 
             function dispose (moduleName) {
-                var key, i, tempResult, result, results = { result: true, failures: [] };
+                var key, i, tempResult, result, results = { result: true, disposed: [] };
 
                 if (is.string(moduleName)) {
                     return self.disposeOne(moduleName);
@@ -80,8 +80,8 @@
                         tempResult = self.disposeOne(moduleName[i]);
                         results.result = results.result && tempResult;
 
-                        if (!tempResult) {
-                            results.failures.push(moduleName[i]);
+                        if (tempResult) {
+                            results.disposed.push(moduleName[i]);
                         }
                     }
 

@@ -21,10 +21,10 @@
                     'it should NOT attempt to step through parent scopes': noParentRecursion
                 }
             },
-            'when setParentScope is used': {
+            'when setParentScope is used,': {
                 'it should accept a string': setParentScopeString,
                 'it should accept another scope': setParentScopeScope,
-                'and the parent arg is not valid': {
+                'and the parent arg is not valid,': {
                     'it should return an exception': setParentScopeErr
                 }
             }
