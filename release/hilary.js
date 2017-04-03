@@ -543,6 +543,9 @@
             }
             function registerOne(input, err, callback) {
                 var tasks = [];
+                if (input && input.scope && input.scope !== self.name) {
+                    return self.scope(input.scope).register(input, callback);
+                }
                 tasks.push(function bind(next) {
                     var hilaryModule = new HilaryModule(input);
                     if (hilaryModule.isException) {

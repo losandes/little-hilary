@@ -110,6 +110,12 @@
             function registerOne (input, err, callback) {
                 var tasks = [];
 
+                if (input && input.scope && input.scope !== self.name) {
+                    // the module declares the scope that is meant to be
+                    // registered to, and it is not this scope
+                    return self.scope(input.scope).register(input, callback);
+                }
+
                 tasks.push(function bind (next) {
                     var hilaryModule = new HilaryModule(input);
 

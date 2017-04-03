@@ -13,18 +13,18 @@
 
     testRunner.describe('hilary,', function () {
         testRunner.run(require('./specs/bootstrap-specs')(hilary, chai.expect, polyn.id, skip));
-        testRunner.run(require('./specs/Container-specs')(hilary, chai.expect));
+        testRunner.run(require('./specs/Container-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/dispose-async-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/dispose-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/exists-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/hilary-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/HilaryModule-specs')(hilary.HilaryModule, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/parent-specs')(hilary, chai.expect, polyn.id, skip));
-        testRunner.run(require('./specs/register-resolve-specs')(hilary, chai.expect, polyn.id));
+        testRunner.run(require('./specs/register-resolve-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/register-resolve-async-specs')(hilary, chai.expect, polyn.id, skip));
-        testRunner.run(require('./specs/register-resolve-class-specs')(hilary, chai.expect, polyn.id));
-        testRunner.run(require('./specs/register-resolve-function-specs')(hilary, chai.expect, polyn.id));
-        testRunner.run(require('./specs/register-resolve-degrade-specs')(hilary, chai.expect, polyn.id, ifBrowser, ifNode));
+        testRunner.run(require('./specs/register-resolve-class-specs')(hilary, chai.expect, polyn.id, skip));
+        testRunner.run(require('./specs/register-resolve-function-specs')(hilary, chai.expect, polyn.id, skip));
+        testRunner.run(require('./specs/register-resolve-degrade-specs')(hilary, chai.expect, polyn.id, ifBrowser, ifNode, skip));
         testRunner.run(require('./specs/register-resolve-error-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/scope-async-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/scope-specs')(hilary, chai.expect, polyn.id, skip));

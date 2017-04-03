@@ -6,7 +6,7 @@
         Spec: Spec
     });
 
-    function Spec (hilary, expect, id) {
+    function Spec (hilary, expect, id, skip) {
         return {
             'when an object literal is registered as a factory,': {
                 'it should be resolvable': registerObjectLiteral,
@@ -24,6 +24,17 @@
                 'it should be resolvable': registerPrimitiveBoolean,
                 'and it has dependencies,': {
                     'it should log and return an exception': registerPrimitiveBooleanWithDependencies
+                }
+            },
+            'when a scope is present on the registration': {
+                'and that scope already exists': {
+                    'it should register the module on that scope': skip()
+                },
+                'and that scope does NOT exist': {
+                    'it should create that scope and register the module on it': skip()
+                },
+                'and that scope matches the scope register was called on': {
+                    'it should not recurse': skip()
                 }
             }
         };
