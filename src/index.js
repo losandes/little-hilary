@@ -3,7 +3,7 @@ if (typeof module !== 'undefined' && module.exports) {
         locale = require('./locale'),
         Exception = require('./Exception'),
         Container = require('./Container')(locale, polyn.is, polyn.Immutable, Exception),
-        Context = require('./Context')(polyn.Immutable, Container),
+        Context = require('./Context')(polyn.Blueprint, Container, Exception, locale),
         HilaryModule = require('./HilaryModule')(polyn.is, polyn.Blueprint, polyn.objectHelper, locale, Exception),
         Logger = require('./Logger')(polyn.is),
         hilary = require('./HilaryApi')(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
@@ -11,7 +11,7 @@ if (typeof module !== 'undefined' && module.exports) {
         polyn.Blueprint.configure({
             compatibility: '2017-03-20'
         });
-        
+
     module.exports = hilary;
 } else if (typeof window !== 'undefined') {
     if (!window.polyn) {

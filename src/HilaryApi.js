@@ -446,8 +446,8 @@
                 }
 
                 logger.debug('setting the parent scope of, ' + self.context.scope + ', to:', name);
-                context = context.setParentScope(name);
-                return context;
+                context.parent = name;
+                return  context;
             }
 
             function getScopeName (scope) {
@@ -553,7 +553,7 @@
 
             function setReadOnlyProperty (obj, name, value) {
                 Object.defineProperty(obj, name, {
-                  enumerable: false,
+                  enumerable: true,
                   configurable: false,
                   get: function () {
                       return value;

@@ -6,40 +6,56 @@
         factory: Context
     });
 
-    function Context(Immutable, Container) {
-        var IContext = new Immutable({
+    function Context(Blueprint, Container, Exception, locale) {
+        var IContext = new Blueprint({
             __blueprintId: 'Hilary::Context',
             scope: 'string',
             parent: {
                 type: 'string',
                 required: false
             },
-            container: 'object',
-            singletonContainer: 'object'
+            container: {
+                type: 'object',
+                required: false
+            },
+            singletonContainer: {
+                type: 'object',
+                required: false
+            }
         });
 
-        return function (options) {
-            var context;
-            options = options || {};
+        return function Ctor (options) {
+            var self = {};
 
-            context = new IContext({
-                scope: options.scope,
-                parent: options.parent,
-                container: new Container(),
-                singletonContainer: new Container()
-            });
-
-            if (context.isException) {
-                return context;
+            if (!IContext.validate(options).result) {
+                return new Exception({
+                    type: locale.errorTypes.INVALID_ARG,
+                    messages: IContext.validate(options).errors
+                });
             }
 
-            context.setParentScope = function (parent) {
-                return IContext.merge({ parent: parent });
-            };
+            setReadOnlyProperty(self, 'scope', options.scope);
+            self.parent = options.parent; // parent is mutable
+            setReadOnlyProperty(self, 'container', options.container || new Container());
+            setReadOnlyProperty(self, 'singletonContainer', options.singletonContainer || new Container());
 
-            return context;
+            return self;
         };
     }
+
+
+    function setReadOnlyProperty (obj, name, value) {
+        Object.defineProperty(obj, name, {
+          enumerable: true,
+          configurable: false,
+          get: function () {
+              return value;
+          },
+          set: function () {
+              console.log(name + ' is read only');
+          }
+        });
+    } // /setReadOnlyProperty
 
 }(function (registration) {
     'use strict';

@@ -209,36 +209,49 @@
         name: "Context",
         factory: Context
     });
-    function Context(Immutable, Container) {
-        var IContext = new Immutable({
+    function Context(Blueprint, Container, Exception, locale) {
+        var IContext = new Blueprint({
             __blueprintId: "Hilary::Context",
             scope: "string",
             parent: {
                 type: "string",
                 required: false
             },
-            container: "object",
-            singletonContainer: "object"
-        });
-        return function(options) {
-            var context;
-            options = options || {};
-            context = new IContext({
-                scope: options.scope,
-                parent: options.parent,
-                container: new Container(),
-                singletonContainer: new Container()
-            });
-            if (context.isException) {
-                return context;
+            container: {
+                type: "object",
+                required: false
+            },
+            singletonContainer: {
+                type: "object",
+                required: false
             }
-            context.setParentScope = function(parent) {
-                return IContext.merge({
-                    parent: parent
+        });
+        return function Ctor(options) {
+            var self = {};
+            if (!IContext.validate(options).result) {
+                return new Exception({
+                    type: locale.errorTypes.INVALID_ARG,
+                    messages: IContext.validate(options).errors
                 });
-            };
-            return context;
+            }
+            setReadOnlyProperty(self, "scope", options.scope);
+            self.parent = options.parent;
+            setReadOnlyProperty(self, "container", options.container || new Container());
+            setReadOnlyProperty(self, "singletonContainer", options.singletonContainer || new Container());
+            return self;
         };
+    }
+    function setReadOnlyProperty(obj, name, value) {
+        Object.defineProperty(obj, name, {
+            enumerable: true,
+            configurable: false,
+            get: function() {
+                return value;
+            },
+            set: function() {
+                console.log(name + " is read only");
+            }
+        });
     }
 })(function(registration) {
     "use strict";
@@ -774,7 +787,7 @@
                     });
                 }
                 logger.debug("setting the parent scope of, " + self.context.scope + ", to:", name);
-                context = context.setParentScope(name);
+                context.parent = name;
                 return context;
             }
             function getScopeName(scope) {
@@ -868,7 +881,7 @@
             }
             function setReadOnlyProperty(obj, name, value) {
                 Object.defineProperty(obj, name, {
-                    enumerable: false,
+                    enumerable: true,
                     configurable: false,
                     get: function() {
                         return value;
@@ -944,7 +957,7 @@
 });
 
 if (typeof module !== "undefined" && module.exports) {
-    var polyn = require("polyn"), locale = require("./locale"), Exception = require("./Exception"), Container = require("./Container")(locale, polyn.is, polyn.Immutable, Exception), Context = require("./Context")(polyn.Immutable, Container), HilaryModule = require("./HilaryModule")(polyn.is, polyn.Blueprint, polyn.objectHelper, locale, Exception), Logger = require("./Logger")(polyn.is), hilary = require("./HilaryApi")(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
+    var polyn = require("polyn"), locale = require("./locale"), Exception = require("./Exception"), Container = require("./Container")(locale, polyn.is, polyn.Immutable, Exception), Context = require("./Context")(polyn.Blueprint, Container, Exception, locale), HilaryModule = require("./HilaryModule")(polyn.is, polyn.Blueprint, polyn.objectHelper, locale, Exception), Logger = require("./Logger")(polyn.is), hilary = require("./HilaryApi")(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
     polyn.Blueprint.configure({
         compatibility: "2017-03-20"
     });

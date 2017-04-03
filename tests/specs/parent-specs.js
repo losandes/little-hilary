@@ -20,6 +20,13 @@
                 'and a module is resolved,': {
                     'it should NOT attempt to step through parent scopes': noParentRecursion
                 }
+            },
+            'when setParentScope is used': {
+                'it should accept a string': setParentScopeString,
+                'it should accept another scope': setParentScopeScope,
+                'and the parent arg is not valid': {
+                    'it should return an exception': setParentScopeErr
+                }
             }
         };
 
@@ -79,6 +86,38 @@
             expect(actual.type).to.equal('ModuleNotFound');
             expect(actual.error.message.indexOf('foo')).to.be.above(-1);
             expect(actual.messages[0].indexOf('foo')).to.be.above(-1);
+        }
+
+        function setParentScopeString () {
+            // given
+            var parent = hilary.scope(id.createUid(8)),
+                scope = hilary.scope(id.createUid(8));
+
+            // when
+            scope.setParentScope(parent.name);
+
+            // then
+            expect(scope.context.parent).to.equal(parent.name);
+        }
+
+        function setParentScopeScope () {
+            // given
+            var parent = hilary.scope(id.createUid(8)),
+                scope = hilary.scope(id.createUid(8));
+
+            // when
+            scope.setParentScope(parent);
+
+            // then
+            expect(scope.context.parent).to.equal(parent.name);
+        }
+
+        function setParentScopeErr () {
+            var actual = hilary.scope(id.createUid(8), { logging: { level: 'off' }})
+                            .setParentScope(null);
+
+            // then
+            expect(actual.isException).to.equal(true);
         }
 
     } // /Spec

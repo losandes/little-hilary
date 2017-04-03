@@ -25,11 +25,7 @@
                 'and the parent is set, but does NOT exist,': {
                     'it should still set the parent to support out-of-order definitions': optionalParentScopeStringNotFound
                 }
-            },
-            // TODO:
-            // exists
-            // dispose
-            // setParentScope
+            }
         };
 
         function defaultScope () {
@@ -157,7 +153,7 @@
             var scope1 = hilary.scope(),
                 scope2 = scope1.scope();
 
-            expect(scope1.context.parent).to.equal(null);
+            expect(scope1.context.parent).to.equal(undefined);
             expect(scope2.context.parent).to.equal(scope1.name);
         }
 
