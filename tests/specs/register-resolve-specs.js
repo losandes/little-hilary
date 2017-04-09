@@ -6,7 +6,7 @@
         Spec: Spec
     });
 
-    function Spec (hilary, expect, id, skip) {
+    function Spec (hilary, expect, id) {
         return {
             'when an object literal is registered as a factory,': {
                 'it should be resolvable': registerObjectLiteral,
@@ -26,18 +26,18 @@
                     'it should log and return an exception': registerPrimitiveBooleanWithDependencies
                 }
             },
-            'when a scope is present on the registration': {
-                'and that scope already exists': {
-                    'it should register the module on that scope': skip()
+            'when a scope is present on the registration,': {
+                'and that scope already exists,': {
+                    'it should register the module on that scope': registerWithExistingScope
                 },
-                'and that scope does NOT exist': {
-                    'it should create that scope and register the module on it': skip()
+                'and that scope does NOT exist,': {
+                    'it should create that scope and register the module on it': registerWithUndefinedScope
                 },
-                'and that scope matches the scope register was called on': {
-                    'it should not recurse': skip()
+                'and that scope matches the scope register was called on,': {
+                    'it should not recurse': registerWithSameScope
                 },
-                'and the current scope is NOT default': {
-                    'it should ignore the scope declaration': skip()
+                'and the current scope is NOT default (i.e. attempts to register on scope2, from scope1),': {
+                    'it should ignore the scope declaration': registerWithOtherScope
                 }
             }
         };
@@ -113,6 +113,106 @@
                 factory: false
             }).isException).to.equal(true);
         }
+
+        function registerWithExistingScope () {
+            // given
+            var scopeName = id.createUid(8),
+                moduleName = 'test';
+
+            // when
+            // create the scope
+            expect(typeof hilary.scope(scopeName)).to.equal('object');
+            hilary.register({
+                scope: scopeName,
+                name: moduleName,
+                factory: { foo: 'bar' }
+            });
+
+            // then
+            expect(hilary.scope(scopeName)
+                .context    // make sure it's on this specific scope
+                .container  // by accessing it's container directly
+                .resolve(moduleName)
+                .factory
+                .foo
+            ).to.equal('bar');
+        } // /registerWithExistingScope
+
+        function registerWithUndefinedScope () {
+            // given
+            var scopeName = id.createUid(8),
+                moduleName = 'test';
+
+            // when
+            hilary.register({
+                scope: scopeName,
+                name: moduleName,
+                factory: { foo: 'bar' }
+            });
+
+            // then
+            expect(hilary.scope(scopeName) // scope creation is implied
+                .context    // make sure it's on this specific scope
+                .container  // by accessing it's container directly
+                .resolve(moduleName)
+                .factory
+                .foo
+            ).to.equal('bar');
+        } // /registerWithUndefinedScope
+
+        function registerWithSameScope () {
+            // given
+            var scopeName = id.createUid(8),
+                scope = hilary.scope(scopeName),
+                moduleName = 'test';
+
+            // when
+            scope.register({
+                scope: scopeName,
+                name: moduleName,
+                factory: { foo: 'bar' }
+            });
+
+            // then
+            expect(scope
+                .context    // make sure it's on this specific scope
+                .container  // by accessing it's container directly
+                .resolve(moduleName)
+                .factory
+                .foo
+            ).to.equal('bar');
+        } // /registerWithSameScope
+
+        function registerWithOtherScope () {
+            // given
+            var scopeName1 = id.createUid(8),
+                scope1 = hilary.scope(scopeName1),
+                scopeName2 = id.createUid(8),
+                scope2 = hilary.scope(scopeName2),
+                moduleName = 'test';
+
+            // when
+            scope1.register({
+                scope: scopeName2,
+                name: moduleName,
+                factory: { foo: 'bar' }
+            });
+
+            // then
+            expect(scope1
+                .context    // make sure it's on this specific scope
+                .container  // by accessing it's container directly
+                .resolve(moduleName)
+                .factory
+                .foo
+            ).to.equal('bar');
+
+            expect(scope2
+                .context
+                .container
+                .resolve(moduleName)
+            ).to.equal(undefined);
+        } // /registerWithOtherScope
 
     } // /Spec
 
