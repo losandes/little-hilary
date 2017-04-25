@@ -1,4 +1,4 @@
-/*! little-hilary 2017-04-03 */
+/*! little-hilary 2017-04-25 */
 (function(register) {
     "use strict";
     register({
@@ -600,7 +600,12 @@
                     context: context,
                     config: config,
                     name: moduleName,
-                    relyingName: relyingModuleName
+                    relyingName: relyingModuleName,
+                    theModule: undefined,
+                    resolved: undefined,
+                    isResolved: false,
+                    registerSingleton: true,
+                    members: []
                 }, tasks = [];
                 tasks.push(function(next) {
                     next(null, ctx);
@@ -618,24 +623,29 @@
                     }
                 });
                 tasks.push(function findModule(ctx, next) {
-                    var message;
+                    var parsed = parseDependencyName(ctx.name), message;
                     if (ctx.context.singletonContainer.exists(ctx.name)) {
                         logger.trace("found singleton for:", ctx.name);
                         ctx.resolved = context.singletonContainer.resolve(ctx.name).factory;
                         ctx.isResolved = true;
                         ctx.registerSingleton = false;
-                        next(null, ctx);
+                        return next(null, ctx);
+                    } else if (parsed.members.length && context.container.exists(parsed.name)) {
+                        logger.trace("found factory for:", ctx.name);
+                        ctx.theModule = context.container.resolve(parsed.name);
+                        ctx.members = parsed.members;
+                        return next(null, ctx);
                     } else if (context.container.exists(ctx.name)) {
                         logger.trace("found factory for:", ctx.name);
                         ctx.theModule = context.container.resolve(ctx.name);
-                        next(null, ctx);
+                        return next(null, ctx);
                     } else {
                         logger.trace("module not found:", ctx.name);
                         message = locale.api.MODULE_NOT_FOUND.replace("{{module}}", ctx.name);
                         if (ctx.name !== ctx.relyingName) {
                             message += locale.api.MODULE_NOT_FOUND_RELYING.replace("{{startingModule}}", ctx.relyingName);
                         }
-                        next(new Exception({
+                        return next(new Exception({
                             type: locale.errorTypes.MODULE_NOT_FOUND,
                             error: new Error(message),
                             data: {
@@ -643,6 +653,19 @@
                                 relyingModuleName: ctx.relyingName
                             }
                         }));
+                    }
+                    function parseDependencyName(dependencyName) {
+                        var memberMatches = /\{([^}]+)\}/.exec(dependencyName), members = [];
+                        if (memberMatches) {
+                            dependencyName = dependencyName.split("{")[0].trim();
+                            members = memberMatches[1].split(",").map(function(member) {
+                                return member.trim();
+                            });
+                        }
+                        return {
+                            name: dependencyName,
+                            members: members
+                        };
                     }
                 });
                 tasks.push(function resolveDependencies(ctx, next) {
@@ -693,6 +716,27 @@
                     ctx.registerSingleton = ctx.theModule.singleton;
                     ctx.isResolved = true;
                     next(null, ctx);
+                });
+                tasks.push(function reduceMembers(ctx, next) {
+                    var reduced;
+                    if (!ctx.members.length) {
+                        return next(null, ctx);
+                    }
+                    if (ctx.members.length === 1) {
+                        if (!ctx.resolved.hasOwnProperty(ctx.members[0])) {
+                            logger.trace("the following dependency was NOT reduced to chosen members:", ctx.name);
+                        }
+                        logger.trace("the following dependency was reduced to chosen members:", ctx.name);
+                        ctx.resolved = ctx.resolved[ctx.members[0]];
+                        return next(null, ctx);
+                    }
+                    reduced = {};
+                    ctx.members.forEach(function(member) {
+                        reduced[member] = ctx.resolved[member];
+                    });
+                    logger.trace("the following dependency was reduced to chosen members:", ctx.name);
+                    ctx.resolved = reduced;
+                    return next(null, ctx);
                 });
                 tasks.push(function optionallyRegisterSingleton(ctx, next) {
                     if (ctx.registerSingleton) {

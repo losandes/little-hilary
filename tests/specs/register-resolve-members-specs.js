@@ -8,19 +8,22 @@
 
     function Spec (hilary, expect, id) {
         return {
-            'when a module is resolved with a single member delcaration (i.e. `polyn { is }`)': {
+            'when a module is resolved with a single member declaration (i.e. `polyn { is }`)': {
                 'it should return the value of that member': resolveSingleMember
             },
             'when a module depends on another module': {
-                'and uses a single member delcaration (i.e. `polyn { is }`)': {
+                'and uses a single member declaration (i.e. `polyn { is }`)': {
                     'it should just pass the declared member to the factory': dependOnSingleMember
                 },
-                'and uses a multiple member delcaration (i.e. `polyn { is, Immutable }`)': {
+                'and uses a multiple member declaration (i.e. `polyn { is, Immutable }`)': {
                     'it should just pass the declared members to the factory': dependOnMultipleMembers
                 }
             },
-            'when a module is resolved with a multiple member delcaration (i.e. `polyn { is, Immutable }`)': {
+            'when a module is resolved with a multiple member declaration (i.e. `polyn { is, Immutable }`)': {
                 'it should only pass the members to the factory': resolveMultipleMembers
+            },
+            'when a module is resolved with a member declaration': {
+                'the reduction should be stored as a singleton': isRegisteredAsSingleton
             }
         };
 
@@ -126,6 +129,26 @@
             expect(actual.value.foo).to.equal('bar');
             expect(actual.value.baz).to.equal('fizz');
             expect(actual.value.raz).to.equal(undefined);
+        }
+
+        function isRegisteredAsSingleton () {
+            // given
+            var scope = hilary.scope(id.createUid(8));
+
+            scope.register({
+                name: 'something',
+                factory: {
+                    foo: 'bar'
+                }
+            });
+
+            // when
+            var actual = scope.resolve('something { foo }');
+
+            // then
+            expect(actual.isException).to.equal(undefined);
+            expect(scope.context.singletonContainer.exists('something { foo }'))
+                .to.equal(true);
         }
 
     } // /Spec
