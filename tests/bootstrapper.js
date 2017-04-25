@@ -26,6 +26,7 @@
         testRunner.run(require('./specs/register-resolve-function-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/register-resolve-degrade-specs')(hilary, chai.expect, polyn.id, ifBrowser, ifNode, skip));
         testRunner.run(require('./specs/register-resolve-error-specs')(hilary, chai.expect, polyn.id, skip));
+        testRunner.run(require('./specs/register-resolve-members-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/scope-async-specs')(hilary, chai.expect, polyn.id, skip));
         testRunner.run(require('./specs/scope-specs')(hilary, chai.expect, polyn.id, skip));
     });

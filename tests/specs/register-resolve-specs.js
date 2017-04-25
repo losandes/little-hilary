@@ -6,7 +6,7 @@
         Spec: Spec
     });
 
-    function Spec (hilary, expect, id) {
+    function Spec (hilary, expect, id, skip) {
         return {
             'when an object literal is registered as a factory,': {
                 'it should be resolvable': registerObjectLiteral,
@@ -25,6 +25,9 @@
                 'and it has dependencies,': {
                     'it should log and return an exception': registerPrimitiveBooleanWithDependencies
                 }
+            },
+            'when a primitive is returned by a factory': {
+                'it should be resolvable': skip()
             },
             'when a scope is present on the registration,': {
                 'and that scope already exists,': {
