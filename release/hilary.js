@@ -538,6 +538,9 @@
                         data: moduleOrArray
                     });
                     logger.error("registration failed:", exc);
+                    if (is.function(callback)) {
+                        callback(exc);
+                    }
                     return exc;
                 }
             }

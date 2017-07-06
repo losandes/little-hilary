@@ -6,21 +6,33 @@
         Spec: Spec
     });
 
-    function Spec (hilary, expect, id, skip) {
+    function Spec (hilary, expect) {
         return {
-            'when a module is registerd (async),': {
-                'it should execute the callback': skip(),
-                'and an error was encountered': {
-                    'it should pass the error as the first arg to the callback': skip()
-                }
-            },
-            'when a module is resolved (async),': {
-                'it should execute the callback': skip(),
-                'and an error was encountered': {
-                    'it should pass the error as the first arg to the callback': skip()
-                }                
+            '(async) when an object literal is registered as a factory,': {
+                'it should be resolvable': registerObjectLiteralAsync
             }
         };
+
+        function registerObjectLiteralAsync (done) {
+            // given
+            var expected = {
+                name: 'testobj',
+                factory: { foo: 'bar' }
+            };
+
+            // when
+            hilary.register(expected, function (err, registration) {
+                // then
+                expect(err).to.equal(null);
+                expect(registration.isException).to.equal(undefined);
+
+                hilary.resolve(expected.name, function (err, actual) {
+                    expect(actual.foo).to.equal('bar');
+                    done();
+                });
+            });
+        }
+
     } // /Spec
 
 }(function (registration) {

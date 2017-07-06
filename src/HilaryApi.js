@@ -97,6 +97,11 @@
                     });
 
                     logger.error('registration failed:', exc);
+
+                    if (is.function(callback)) {
+                        callback(exc);
+                    }
+
                     return exc;
                 }
             }
@@ -338,6 +343,9 @@
                     next(null, ctx);
                 });
 
+                // reduces the members of the object that was registered
+                // to only what the relying party asks for
+                // i.e. scope.resolve('something { foo }');
                 tasks.push(function reduceMembers (ctx, next) {
                     var reduced;
 

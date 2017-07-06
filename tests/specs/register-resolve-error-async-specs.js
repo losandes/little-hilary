@@ -2,85 +2,87 @@
     'use strict';
 
     register({
-        name: 'register-resolve-error-specs',
+        name: 'register-resolve-error-async-specs',
         Spec: Spec
     });
 
     function Spec (hilary, expect, id) {
         return {
-            'when attempting to register a module,': {
+            '(async) when attempting to register a module,': {
                 'and the first argument is NOT an object or array': {
-                    'it should return an exception': registerInvalidFirstArg
+                    'it should pass an exception to the callback': registerInvalidFirstArg
                 },
                 'and the registration is missing required properties': {
-                    'it should return an exception': registrationMissingProperties
+                    'it should pass an exception to the callback': registrationMissingProperties
                 }
             },
-            'when attempting to resolve a module,': {
+            '(async) when attempting to resolve a module,': {
                 'and the name is not a string': {
-                    'it should return an exception': resolveWithInvalidName
+                    'it should pass an exception to the callback': resolveWithInvalidName
                 },
                 'and the module is not found': {
-                    'it should return an exception': resolveNotFound
+                    'it should pass an exception to the callback': resolveNotFound
                 },
                 'and the module\'s dependencies were not found': {
-                    'it should return an exception': resolveMissingDependencies
+                    'it should pass an exception to the callback': resolveMissingDependencies
                 }
             }
         };
 
-        function registerInvalidFirstArg () {
+        function registerInvalidFirstArg (done) {
             // given
             var scope = hilary.scope(id.createUid(8), { logging: { log: function () {}}});
 
             // when
-            var actual = scope.register(0);
-
-            // then
-            expect(actual.isException).to.equal(true);
-            expect(actual.type).to.equal('InvalidArgument');
+            scope.register(0, function (err) {
+                // then
+                expect(err.type).to.equal('InvalidArgument');
+                done();
+            });
         }
 
-        function registrationMissingProperties () {
+        function registrationMissingProperties (done) {
             // given
             var scope = hilary.scope(id.createUid(8), { logging: { log: function () {}}});
 
             // when
-            var actual = scope.register({});
-
-            // then
-            expect(actual.isException).to.equal(true);
-            expect(actual.type).to.equal('InvalidRegistration');
+            scope.register({}, function (err) {
+                // then
+                expect(err.type).to.equal('InvalidRegistration');
+                done();
+            });
         }
 
-        function resolveWithInvalidName () {
+        function resolveWithInvalidName (done) {
             // given
             var scope = hilary.scope(id.createUid(8), { logging: { log: function () {}}});
 
             // when
-            var actual = scope.resolve(0);
-
-            // then
-            expect(actual.isException).to.equal(true);
-            expect(actual.type).to.equal('InvalidArgument');
+            scope.resolve(0, function (err) {
+                // then
+                expect(typeof err).to.equal('object');
+                expect(err.isException).to.equal(true);
+                expect(err.type).to.equal('InvalidArgument');
+                done();
+            });
         }
 
-        function resolveNotFound () {
+        function resolveNotFound (done) {
             // given
             var scope = hilary.scope(id.createUid(8), { logging: { log: function () {}}});
 
             // when
-            var actual = scope.resolve(id.createUid(8));
-
-            // then
-            expect(actual.isException).to.equal(true);
-            expect(actual.type).to.equal('ModuleNotFound');
+            scope.resolve(id.createUid(8), function (err) {
+                // then
+                expect(err.isException).to.equal(true);
+                expect(err.type).to.equal('ModuleNotFound');
+                done();
+            });
         }
 
-        function resolveMissingDependencies () {
+        function resolveMissingDependencies (done) {
             // given
-            var scope = hilary.scope(id.createUid(8), { logging: { log: function () {}}}),
-                actual;
+            var scope = hilary.scope(id.createUid(8), { logging: { log: function () {}}});
 
             scope.register({
                 name: 'regfunc1',
@@ -100,11 +102,12 @@
             });
 
             // when
-            actual = scope.resolve('regfunc4');
-
-            // then
-            expect(actual.isException).to.equal(true);
-            expect(actual.type).to.equal('ModuleNotFound');
+            scope.resolve('regfunc4', function (err) {
+                // then
+                expect(err.isException).to.equal(true);
+                expect(err.type).to.equal('ModuleNotFound');
+                done();
+            });
         }
 
     } // /Spec
