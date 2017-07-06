@@ -1,4 +1,4 @@
-/*! little-hilary 2017-04-25 */
+/*! little-hilary 2017-07-06 */
 (function(register) {
     "use strict";
     register({
@@ -498,6 +498,9 @@
                 return context;
             }
             self = {
+                __isHilaryScope: true,
+                context: context,
+                HilaryModule: HilaryModule,
                 register: register,
                 resolve: resolve,
                 exists: exists,
@@ -506,9 +509,6 @@
                 scope: scope,
                 setParentScope: setParentScope
             };
-            setReadOnlyProperty(self, "__isHilaryScope", true);
-            setReadOnlyProperty(self, "context", context);
-            setReadOnlyProperty(self, "HilaryModule", HilaryModule);
             Object.defineProperty(self, "name", {
                 enumerable: false,
                 configurable: false,
@@ -943,31 +943,23 @@
                 }
                 return self;
             }
-            function setReadOnlyProperty(obj, name, value) {
-                Object.defineProperty(obj, name, {
-                    enumerable: true,
-                    configurable: false,
-                    get: function() {
-                        return value;
-                    },
-                    set: function() {
-                        logger.warn(name + " is read only");
-                    }
-                });
-            }
             return self;
         };
-        Api.scope = function(name, options) {
+        Api.scope = function(name, options, seal) {
+            seal = typeof seal !== "boolean" ? true : seal;
             if (scopes[name]) {
                 return scopes[name];
             } else {
                 options = options || {};
                 options.name = name;
                 scopes[name] = new Api(options);
+                if (seal) {
+                    freeze(scopes[name]);
+                }
                 return scopes[name];
             }
         };
-        defaultScope = Api.scope(DEFAULT);
+        defaultScope = Api.scope(DEFAULT, null, false);
         defaultScope.Context = Context;
         defaultScope.context.singletonContainer.register({
             name: ASYNC,
@@ -988,6 +980,7 @@
             name: IS,
             factory: is
         });
+        freeze(defaultScope);
         return defaultScope;
     }
     function gracefullyDegrade(moduleName) {
@@ -1000,6 +993,12 @@
         } else if (typeof window !== "undefined") {
             return window[moduleName];
         }
+    }
+    function freeze(scope) {
+        Object.freeze(scope);
+        Object.seal(scope.context);
+        Object.seal(scope.context.container);
+        Object.seal(scope.context.singletonContainer);
     }
 })(function(registration) {
     "use strict";
@@ -1020,13 +1019,7 @@
     }
 });
 
-if (typeof module !== "undefined" && module.exports) {
-    var polyn = require("polyn"), locale = require("./locale"), Exception = require("./Exception"), Container = require("./Container")(locale, polyn.is, polyn.Immutable, Exception), Context = require("./Context")(polyn.Blueprint, Container, Exception, locale), HilaryModule = require("./HilaryModule")(polyn.is, polyn.Blueprint, polyn.objectHelper, locale, Exception), Logger = require("./Logger")(polyn.is), hilary = require("./HilaryApi")(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
-    polyn.Blueprint.configure({
-        compatibility: "2017-03-20"
-    });
-    module.exports = hilary;
-} else if (typeof window !== "undefined") {
+if (typeof window !== "undefined") {
     if (!window.polyn) {
         throw new Error("[HILARY] Hilary depends on polyn. Make sure it is included before loading Hilary (https://github.com/losandes/polyn)");
     } else if (!window.__hilary) {
@@ -1040,6 +1033,12 @@ if (typeof module !== "undefined" && module.exports) {
         });
         window.hilary = __hilary.HilaryApi(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
     })(window.polyn, window.__hilary, window);
+} else if (typeof module !== "undefined" && module.exports) {
+    var polyn = require("polyn"), locale = require("./locale"), Exception = require("./Exception"), Container = require("./Container")(locale, polyn.is, polyn.Immutable, Exception), Context = require("./Context")(polyn.Blueprint, Container, Exception, locale), HilaryModule = require("./HilaryModule")(polyn.is, polyn.Blueprint, polyn.objectHelper, locale, Exception), Logger = require("./Logger")(polyn.is), hilary = require("./HilaryApi")(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
+    polyn.Blueprint.configure({
+        compatibility: "2017-03-20"
+    });
+    module.exports = hilary;
 } else {
     throw new Error("[HILARY] Unkown runtime environment");
 }

@@ -37,6 +37,9 @@
             }
 
             self = {
+                __isHilaryScope: true,
+                context: context,
+                HilaryModule: HilaryModule,
                 register: register,
                 resolve: resolve,
                 exists: exists,
@@ -45,10 +48,6 @@
                 scope: scope,
                 setParentScope: setParentScope
             };
-
-            setReadOnlyProperty(self, '__isHilaryScope', true);
-            setReadOnlyProperty(self, 'context', context);
-            setReadOnlyProperty(self, 'HilaryModule', HilaryModule);
 
             Object.defineProperty(self, 'name', {
                 enumerable: false,
@@ -650,34 +649,28 @@
                 return self;
             } // /Config
 
-            function setReadOnlyProperty (obj, name, value) {
-                Object.defineProperty(obj, name, {
-                  enumerable: true,
-                  configurable: false,
-                  get: function () {
-                      return value;
-                  },
-                  set: function () {
-                      logger.warn(name + ' is read only');
-                  }
-                });
-            } // /setReadOnlyProperty
-
             return self;
         }; // /Api
 
-        Api.scope = function (name, options) {
+        Api.scope = function (name, options, seal) {
+            seal = typeof seal !== 'boolean' ? true : seal;
+
             if (scopes[name]) {
                 return scopes[name];
             } else {
                 options = options || {};
                 options.name = name;
                 scopes[name] = new Api(options);
+
+                if (seal) {
+                    freeze(scopes[name]);
+                }
+
                 return scopes[name];
             }
         };
 
-        defaultScope = Api.scope(DEFAULT);
+        defaultScope = Api.scope(DEFAULT, null, false);
         defaultScope.Context = Context;
 
         // REGISTER Default Modules
@@ -687,6 +680,7 @@
         defaultScope.context.singletonContainer.register({ name: IMMUTABLE,    factory: Immutable });
         defaultScope.context.singletonContainer.register({ name: IS,           factory: is });
 
+        freeze(defaultScope);
         return defaultScope;
     } // /Api
 
@@ -702,6 +696,13 @@
             // attempt to resolve from Window
             return window[moduleName];
         }
+    }
+
+    function freeze (scope) {
+        Object.freeze(scope);
+        Object.seal(scope.context);
+        Object.seal(scope.context.container);
+        Object.seal(scope.context.singletonContainer);
     }
 
 }(function (registration) {

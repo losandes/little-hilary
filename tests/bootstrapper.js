@@ -6,7 +6,7 @@
         hilary = require('../index'),
         testRunner = require('./testRunner'),
         skip = function (func) {
-            func = func || function () {};
+            func = func || function () { };
             func.skip = true;
             return func;
         };

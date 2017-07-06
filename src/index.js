@@ -1,19 +1,4 @@
-if (typeof module !== 'undefined' && module.exports) {
-    var polyn = require('polyn'),
-        locale = require('./locale'),
-        Exception = require('./Exception'),
-        Container = require('./Container')(locale, polyn.is, polyn.Immutable, Exception),
-        Context = require('./Context')(polyn.Blueprint, Container, Exception, locale),
-        HilaryModule = require('./HilaryModule')(polyn.is, polyn.Blueprint, polyn.objectHelper, locale, Exception),
-        Logger = require('./Logger')(polyn.is),
-        hilary = require('./HilaryApi')(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
-
-        polyn.Blueprint.configure({
-            compatibility: '2017-03-20'
-        });
-
-    module.exports = hilary;
-} else if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined') {
     if (!window.polyn) {
         throw new Error('[HILARY] Hilary depends on polyn. Make sure it is included before loading Hilary (https://github.com/losandes/polyn)');
     } else if (!window.__hilary) {
@@ -37,6 +22,21 @@ if (typeof module !== 'undefined' && module.exports) {
         window.hilary = __hilary.HilaryApi(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
 
     }(window.polyn, window.__hilary, window));
+} else if (typeof module !== 'undefined' && module.exports) {
+    var polyn = require('polyn'),
+        locale = require('./locale'),
+        Exception = require('./Exception'),
+        Container = require('./Container')(locale, polyn.is, polyn.Immutable, Exception),
+        Context = require('./Context')(polyn.Blueprint, Container, Exception, locale),
+        HilaryModule = require('./HilaryModule')(polyn.is, polyn.Blueprint, polyn.objectHelper, locale, Exception),
+        Logger = require('./Logger')(polyn.is),
+        hilary = require('./HilaryApi')(polyn.async, polyn.is, polyn.id, polyn.Immutable, locale, Logger, Exception, Context, HilaryModule);
+
+        polyn.Blueprint.configure({
+            compatibility: '2017-03-20'
+        });
+
+    module.exports = hilary;
 } else {
     throw new Error('[HILARY] Unkown runtime environment');
 }
