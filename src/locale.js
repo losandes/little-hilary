@@ -28,6 +28,9 @@
                 // MODULE_NOT_RESOLVABLE_RELYING: ', causing a ripple effect for, "{{startingModule}}"',
                 REGISTRATION_BLACK_LIST: 'A module was registered with a reserved name: ',
                 PARENT_CONTAINER_ARG: 'setParentScope expects the name of the parent scope, or an instance of Hilary'
+            },
+            bootstrap: {
+                TASKS_ARRAY: 'bootstrap expects the first argument to be an array of functions'
             }
         }
     });

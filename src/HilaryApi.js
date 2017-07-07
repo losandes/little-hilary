@@ -568,14 +568,21 @@
                 }
             }
 
-            function bootstrap (startup, callback) {
-                var tasks = [], done;
-                startup = startup || {};
+            function bootstrap (startupTasks, callback) {
+                var tasks = [],
+                    callbackExists = is.function(callback),
+                    done;
 
-                if (is.function(startup.onComposed)) {
-                    logger.trace('using onComposed as the callback for the bootstrapper (ignores the callback argument) for:', self.context.scope);
-                    done = startup.onComposed;
-                } else if (is.function(callback)) {
+                if (is.defined(startupTasks) && is.not.array(startupTasks)) {
+                    tasks.push(function (next) {
+                        next(new Exception({
+                            type: locale.errorTypes.BOOTSTRAP_FAILED,
+                            error: new Error(locale.bootstrap.TASKS_ARRAY)
+                        }));
+                    });
+                }
+
+                if (callbackExists) {
                     logger.trace('using the callback argument for the bootstrapper for:', self.context.scope);
                     done = callback;
                 } else {
@@ -586,20 +593,39 @@
                                 type: locale.errorTypes.BOOTSTRAP_FAILED,
                                 error: err
                             }));
+                        } else {
+                            logger.trace('finished bootstrapping:', self.context.scope);
                         }
                     };
                 }
 
                 tasks.push(function start (next) {
+                    logger.trace('bootstrapping hilary for:', self.context.scope);
                     next(null, self);
                 });
 
-                if (is.function(startup.composeModules)) {
-                    logger.trace('composing modules for:', self.context.scope);
-                    tasks.push(startup.composeModules);
+                if (Array.isArray(startupTasks)) {
+                    startupTasks.forEach(function (task) {
+                        if (is.function(task)) {
+                            tasks.push(task);
+                        }
+                    });
                 }
 
-                async.waterfall(tasks, done);
+                if (is.defined(startupTasks) && startupTasks.length > 0 && tasks.length === 1) {
+                    tasks.push(function (scope, next) {
+                        next(new Exception({
+                            type: locale.errorTypes.BOOTSTRAP_FAILED,
+                            error: new Error(locale.bootstrap.TASKS_ARRAY)
+                        }));
+                    });
+                }
+
+                if (tasks.length === 1) {
+                    logger.trace('no task functions were found in the bootstrapper for:', self.context.scope);
+                }
+
+                return async.waterfall(tasks, done);
             }
 
             function optionalAsync(func, err, callback) {
